@@ -184,7 +184,7 @@ def stage():
     print(json.dumps({"staging_function_call_id": call.object_id}, indent=2))
 
 
-@app.function(image=gpu_image, gpu="L40S:8", cpu=32, memory=131072,
+@app.function(image=gpu_image, gpu="A100-80GB:8", cpu=32, memory=131072,
               timeout=86400, volumes={"/volume": volume})
 def train_complete_dataset() -> dict:
     import json
