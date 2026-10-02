@@ -65,6 +65,8 @@ python3 scripts/infer.py --image example.jpg --task spatial_boolean \
 
 The model card has a full Python example. Hugging Face currently lists no Inference Provider for this adapter, so its page has no live browser widget. The CLI accepts all five tasks; use `python3 scripts/infer.py --help` for box arguments. Your photo stays local when you run the CLI.
 
+For a guided run, [open the Colab notebook](https://colab.research.google.com/github/harshnandwana/grounding-jet/blob/main/notebooks/try_visual_jev.ipynb) and upload your own image to your Google runtime. The Hugging Face “Use this model” PEFT snippet currently loads the text-only Qwen class, so use the model card code, CLI, or notebook for image questions.
+
 The figure below shows three real cases where the base model failed and the adapter passed, and three where both failed. It includes annotated COCO photo thumbnails in this GitHub repository only. The [companion JSON](results/test_case_examples.json) retains the full predictions; `scripts/plots/plot_test_cases.py` regenerates the figure from local COCO photos and the published test records.
 
 ![Held-out comparison with annotated COCO photos](results/test_case_comparison.png)

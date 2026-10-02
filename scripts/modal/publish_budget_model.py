@@ -145,7 +145,7 @@ See [`metrics.json`](metrics.json) for exact values, [`predictions.jsonl`](predi
 
 ## Use with your own image
 
-The Hub may not show an interactive widget for this adapter unless an Inference Provider serves it. This example runs the model locally. Install `torch`, `transformers>=5.6,<6`, `peft>=0.21.2`, and `pillow`, then place your own photo at `example.jpg`.
+The Hub may not show an interactive widget for this adapter unless an Inference Provider serves it. **Use the code below, not the Hub's generic PEFT popover:** that popover loads `AutoModelForCausalLM`, which omits the vision tower. For a guided run, [open the correct Colab notebook](https://colab.research.google.com/github/harshnandwana/grounding-jet/blob/main/notebooks/try_visual_jev.ipynb). Colab uploads your chosen photo to your Google runtime. The example below runs locally: install `torch`, `transformers>=5.6,<6`, `peft>=0.21.2`, and `pillow`, then place your own photo at `example.jpg`.
 
 ```python
 import torch
