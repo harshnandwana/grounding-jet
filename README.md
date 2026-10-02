@@ -67,6 +67,16 @@ The model card has a full Python example. Hugging Face currently lists no Infere
 
 For a guided run, [open the Colab notebook](https://colab.research.google.com/github/harshnandwana/grounding-jet/blob/main/notebooks/try_visual_jev.ipynb) and upload your own image to your Google runtime. The Hugging Face “Use this model” PEFT snippet currently loads the text-only Qwen class, so use the model card code, CLI, or notebook for image questions.
 
+## Gradio demo
+
+The [Gradio Space source](space/app.py) includes five task presets on a generated shapes diagram. The presets are input-format demos; they are not benchmark cases, and no photographs are part of the Space source. The [Space publisher](scripts/modal/publish_space.py) uses the `visual-jev-hf-publish` Modal secret and uploads only `README.md`, `app.py`, and `requirements.txt` from `space/` to `harshnandwana/visual-jev-demo`:
+
+```bash
+modal run scripts/modal/publish_space.py
+```
+
+The Space is **not yet live**. Hugging Face rejected creation on the current account with HTTP 402: CPU Basic Gradio Spaces require PRO. ZeroGPU creation was also rejected because this account is not yet eligible. After the account becomes eligible or has PRO, run the publisher above. It requests CPU Basic by default, which has no hourly hardware charge but can be slow for inference. Change the hardware deliberately if a faster paid setup is desired.
+
 The figure below shows three real cases where the base model failed and the adapter passed, and three where both failed. It includes annotated COCO photo thumbnails in this GitHub repository only. The [companion JSON](results/test_case_examples.json) retains the full predictions; `scripts/plots/plot_test_cases.py` regenerates the figure from local COCO photos and the published test records.
 
 ![Held-out comparison with annotated COCO photos](results/test_case_comparison.png)
