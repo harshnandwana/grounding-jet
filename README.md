@@ -10,7 +10,7 @@ The Hugging Face dataset and this GitHub repository contain **no photo files**. 
 | --- | --- |
 | `dataset.py`, `build_full_dataset.py`, `build_vg.py`, `package_hf_dataset.py` | Validate and build the annotation dataset. |
 | `generate_luna.py`, `export_luna.py` | Generate and export candidate questions with the Codex Python SDK. |
-| `train_modal.py`, `train_full_modal.py`, `full_modal.py`, `full_worker.py` | Pilot, sampled, and complete dataset Modal training. |
+| `train_modal.py`, `train_full_modal.py`, `full_modal.py`, `full_worker.py`, `budget_modal.py` | Pilot, sampled, complete, and budget-limited Modal training. |
 | `plot_results.py`, `plot_public_pilot.py`, `plot_full_benchmark.py`, `publish_full_model.py` | Plot and publish measured results. |
 | `fixtures/`, `test_dataset.py` | Synthetic fixture and local tests. |
 | `data/train.jsonl`, `data/validation.jsonl` | Small pilot annotations; photos are separate. |
@@ -63,7 +63,9 @@ For rebuilding from raw annotations, use `build_full_dataset.py`, `build_vg.py`,
 
 The pilot script `train_modal.py` demonstrates a small L4 LoRA run. Its measured results are in `data/train_smoke_metrics.json` and `data/choice_eval.json`; the [public pilot plot](data/pilot_metrics.png) has no photo thumbnails. These small-sample results do not establish full-dataset performance.
 
-`full_modal.py` stages annotation files from the pinned Hugging Face revision and downloads COCO photos directly to a Modal Volume. It commits a 5,000-image tar shard at a time so cancelled staging can resume. After all 100,008 images are staged, it starts `full_worker.py` on four A100 80 GB GPUs for one complete training epoch, full validation loss, and generation on every held-out test record. `publish_full_model.py` checks all split and task counts before preparing a benchmark plot, model card, and public adapter release. **No full-dataset metric or model release is claimed until the run completes.**
+The two-L4 budget run has a verified one-step training result in [BUDGET_TRAINING.md](BUDGET_TRAINING.md). The larger 40,000-row run uses the same batch configuration and publishes its full selected-subset benchmark after successful completion.
+
+`full_modal.py` is the complete-dataset training path. It stages photos outside Hugging Face and can train all 694,255 rows on four A100 80 GB GPUs, followed by full validation and test benchmarking. The complete run was stopped to stay within the available Modal credit budget. **No full-dataset metric or model release is claimed.** The bounded release path in [`BUDGET_TRAINING.md`](BUDGET_TRAINING.md) uses a reproducible 40,000-row subset and two L4 GPUs, with an explicit six-hour GPU timeout and sampled evaluation.
 
 Set up [Modal](https://modal.com/docs/guide) and a Hugging Face token with model-write access before running the automatic publication path. The current project configuration uses a Modal secret named `visual-jev-hf-publish` containing `HF_TOKEN`; keep the token out of source control. Edit `REPO_ID`, `DATASET_REVISION`, the model repo ID, and Modal Volume name if you fork the project. Then:
 

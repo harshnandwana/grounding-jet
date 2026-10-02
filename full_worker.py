@@ -25,6 +25,8 @@ TASKS = ("ground_bbox", "box_choice", "spatial_boolean", "attribute_text", "rela
 DATA_DIR = Path(os.environ.get("VISUAL_JEV_DATA_DIR", "/tmp/visual_jev_full"))
 OUTPUT_DIR = Path(os.environ.get("VISUAL_JEV_OUTPUT_DIR", "/volume/full_run"))
 ACCUMULATION = int(os.environ.get("VISUAL_JEV_ACCUMULATION", "8"))
+MICROBATCH = int(os.environ.get("VISUAL_JEV_MICROBATCH", "1"))
+CHECKPOINT_EVERY = int(os.environ.get("VISUAL_JEV_CHECKPOINT_EVERY", "2000"))
 LEARNING_RATE = 5e-5
 SEED = 43801
 
@@ -93,6 +95,43 @@ def prepare(row: dict, processor, device, labeled: bool = True) -> dict:
         labels = batch["input_ids"].clone()
         labels[:, :n] = -100
         batch["labels"] = labels
+    return {key: value.to(device) if isinstance(value, torch.Tensor) else value
+            for key, value in batch.items()}
+
+
+def prepare_training_batch(rows: list[dict], processor, device) -> dict:
+    if len(rows) == 1:
+        return prepare(rows[0], processor, device)
+    conversations = []
+    users = []
+    for row in rows:
+        path = DATA_DIR / row["image"]["path"]
+        with Image.open(path) as source:
+            photo = source.convert("RGB")
+            photo.thumbnail((512, 512))
+        prompt, answer = text_and_target(row)
+        user = {"role": "user", "content": [{"type": "image", "image": photo},
+                                            {"type": "text", "text": prompt}]}
+        users.append(user)
+        conversations.append([user, {"role": "assistant", "content": answer}])
+    batch = processor.apply_chat_template(
+        conversations, chat_template=processor.tokenizer.chat_template,
+        tokenize=True, add_generation_prompt=False,
+        processor_kwargs={"padding": True}, return_dict=True, return_tensors="pt",
+    )
+    labels = batch["input_ids"].clone()
+    labels[batch["attention_mask"] == 0] = -100
+    for index, user in enumerate(users):
+        prefix = processor.apply_chat_template(
+            [user], chat_template=processor.tokenizer.chat_template,
+            tokenize=True, add_generation_prompt=True,
+            return_dict=True, return_tensors="pt",
+        )["input_ids"][0]
+        length = prefix.shape[0]
+        if not torch.equal(batch["input_ids"][index, :length], prefix):
+            raise RuntimeError(f"target alignment failed: {rows[index]['id']}")
+        labels[index, :length] = -100
+    batch["labels"] = labels
     return {key: value.to(device) if isinstance(value, torch.Tensor) else value
             for key, value in batch.items()}
 
@@ -207,6 +246,8 @@ def main() -> None:
     if rank == 0:
         print(f"world={world} full_train={train_total} full_validation={val_total} full_test={test_total}", flush=True)
     processor = AutoProcessor.from_pretrained(BASE_MODEL)
+    if MICROBATCH > 1:
+        processor.tokenizer.padding_side = "right"
     model = Qwen3_5ForConditionalGeneration.from_pretrained(
         BASE_MODEL, dtype=torch.bfloat16, attn_implementation="sdpa"
     ).to(device)
@@ -222,7 +263,8 @@ def main() -> None:
     optimizer = torch.optim.AdamW((p for p in ddp.parameters() if p.requires_grad), lr=LEARNING_RATE)
     random.Random(SEED + rank).shuffle(train_rows)
     rows_per_rank = math.ceil(train_total / world)
-    padded_rows = math.ceil(rows_per_rank / ACCUMULATION) * ACCUMULATION
+    rows_per_step = MICROBATCH * ACCUMULATION
+    padded_rows = math.ceil(rows_per_rank / rows_per_step) * rows_per_step
     if len(train_rows) < padded_rows:
         train_rows.extend(train_rows[:padded_rows - len(train_rows)])
     if len(train_rows) != padded_rows:
@@ -231,20 +273,22 @@ def main() -> None:
     optimizer.zero_grad(set_to_none=True)
     if rank == 0:
         print("phase=training", flush=True)
-    for index, row in enumerate(train_rows, 1):
+    for offset in range(0, len(train_rows), MICROBATCH):
+        batch_rows = train_rows[offset:offset + MICROBATCH]
+        microstep = offset // MICROBATCH + 1
         ddp.train()
-        sync = index % ACCUMULATION == 0
+        sync = microstep % ACCUMULATION == 0
         context = nullcontext() if sync else ddp.no_sync()
         with context:
-            loss = ddp(**prepare(row, processor, device)).loss
+            loss = ddp(**prepare_training_batch(batch_rows, processor, device)).loss
             if not torch.isfinite(loss):
-                raise RuntimeError(f"nonfinite loss rank={rank} row={index}")
+                raise RuntimeError(f"nonfinite loss rank={rank} microstep={microstep}")
             (loss / ACCUMULATION).backward()
-        train_sum += loss.float().item()
+        train_sum += loss.float().item() * len(batch_rows)
         if sync:
             optimizer.step()
             optimizer.zero_grad(set_to_none=True)
-            step = index // ACCUMULATION
+            step = microstep // ACCUMULATION
             if step == 1:
                 torch.cuda.synchronize(device)
                 print(f"rank={rank} first_step_allocated_gb="
@@ -252,8 +296,8 @@ def main() -> None:
                       f"first_step_reserved_gb={torch.cuda.max_memory_reserved(device) / 1e9:.2f}",
                       flush=True)
             if rank == 0 and (step == 1 or step % 500 == 0):
-                print(f"optimizer_step={step}/{padded_rows // ACCUMULATION} elapsed_s={time.time()-start:.0f}", flush=True)
-            if step % 2000 == 0:
+                print(f"optimizer_step={step}/{padded_rows // rows_per_step} elapsed_s={time.time()-start:.0f}", flush=True)
+            if CHECKPOINT_EVERY and step % CHECKPOINT_EVERY == 0:
                 dist.barrier()
                 if rank == 0:
                     checkpoint = OUTPUT_DIR / "checkpoints" / f"step-{step:05d}"
@@ -283,6 +327,7 @@ def main() -> None:
         processor.save_pretrained(OUTPUT_DIR / "processor")
         (OUTPUT_DIR / "validation_interim.json").write_text(json.dumps({
             "dataset_revision": os.environ.get("VISUAL_JEV_DATASET_REVISION"),
+            "dataset_selection": manifest.get("selection"),
             "baseline_validation_nll": baseline_validation,
             "adapter_validation_nll": tuned_validation,
         }, indent=2) + "\n")
@@ -300,8 +345,10 @@ def main() -> None:
             "gpu": torch.cuda.get_device_name(local_rank), "gpu_count": world,
             "train_records_unique": train_total, "train_records_processed_including_padding": int(train_stats[1].item()),
             "validation_records": val_total, "test_records": test_total,
-            "epochs": 1, "optimizer_steps": padded_rows // ACCUMULATION,
+            "epochs": 1, "optimizer_steps": padded_rows // rows_per_step,
             "gradient_accumulation_per_gpu": ACCUMULATION,
+            "microbatch_per_gpu": MICROBATCH,
+            "effective_global_batch_size": world * rows_per_step,
             "learning_rate": LEARNING_RATE, "lora_rank": 16,
             "mean_train_nll": (train_stats[0] / train_stats[1]).item(),
             "baseline_full_validation_nll": baseline_validation,

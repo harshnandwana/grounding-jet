@@ -1,0 +1,95 @@
+{
+  "base_model": "Qwen/Qwen3.5-0.8B-Base",
+  "dataset_repo": "harshnandwana/visual-jev-decisions-v1",
+  "dataset_revision": "sample-smoke",
+  "gpu": "NVIDIA L4",
+  "gpu_count": 2,
+  "train_records_unique": 64,
+  "train_records_processed_including_padding": 64,
+  "validation_records": 64,
+  "test_records": 64,
+  "epochs": 1,
+  "optimizer_steps": 1,
+  "gradient_accumulation_per_gpu": 8,
+  "microbatch_per_gpu": 4,
+  "effective_global_batch_size": 64,
+  "learning_rate": 5e-05,
+  "lora_rank": 16,
+  "mean_train_nll": 1.0661967135965824,
+  "baseline_full_validation_nll": {
+    "ground_bbox": {
+      "n": 15,
+      "mean_nll": 0.944708236058553
+    },
+    "box_choice": {
+      "n": 8,
+      "mean_nll": 1.0333494618535042
+    },
+    "spatial_boolean": {
+      "n": 16,
+      "mean_nll": 0.3689822256565094
+    },
+    "attribute_text": {
+      "n": 14,
+      "mean_nll": 1.673659901533808
+    },
+    "relation_text": {
+      "n": 11,
+      "mean_nll": 4.393663211302324
+    }
+  },
+  "adapter_full_validation_nll": {
+    "ground_bbox": {
+      "n": 15,
+      "mean_nll": 0.9417081316312154
+    },
+    "box_choice": {
+      "n": 8,
+      "mean_nll": 0.9828952774405479
+    },
+    "spatial_boolean": {
+      "n": 16,
+      "mean_nll": 0.3646451076492667
+    },
+    "attribute_text": {
+      "n": 14,
+      "mean_nll": 1.6186736800840922
+    },
+    "relation_text": {
+      "n": 11,
+      "mean_nll": 4.369302901354703
+    }
+  },
+  "full_test_generation_scores": {
+    "ground_bbox": {
+      "n": 8,
+      "base_mean": 0.06378492725802416,
+      "adapter_mean": 0.11182328297064585
+    },
+    "box_choice": {
+      "n": 17,
+      "base_mean": 0.0,
+      "adapter_mean": 0.0
+    },
+    "spatial_boolean": {
+      "n": 13,
+      "base_mean": 0.46153846153846156,
+      "adapter_mean": 0.38461538461538464
+    },
+    "attribute_text": {
+      "n": 11,
+      "base_mean": 0.0,
+      "adapter_mean": 0.0
+    },
+    "relation_text": {
+      "n": 15,
+      "base_mean": 0.0,
+      "adapter_mean": 0.0
+    }
+  },
+  "score_definition": "ground_bbox: mean IoU; all other tasks: greedy-generation exact match",
+  "elapsed_seconds": 89.77340769767761,
+  "peak_cuda_memory_gb": 12.656357888,
+  "peak_cuda_reserved_gb": 16.699621376,
+  "gpu_total_memory_gb": 23.65915136
+}
