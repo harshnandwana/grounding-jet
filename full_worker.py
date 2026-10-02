@@ -1,4 +1,4 @@
-"""Eight-GPU full-dataset Qwen3.5 visual LoRA training and evaluation worker."""
+"""Distributed full-dataset Qwen3.5 visual LoRA training and evaluation worker."""
 
 from __future__ import annotations
 
@@ -215,6 +215,9 @@ def main() -> None:
         r=16, lora_alpha=32, lora_dropout=0.0,
         target_modules=["q_proj", "v_proj"], bias="none",
     ))
+    if rank == 0:
+        print(f"gpu_name={torch.cuda.get_device_name(device)} "
+              f"gpu_total_gb={torch.cuda.get_device_properties(device).total_memory / 1e9:.2f}", flush=True)
     baseline_validation = full_loss(model, processor, val_rows, device, base=True)
     if rank == 0:
         print("full_baseline_validation_nll", baseline_validation, flush=True)
@@ -243,6 +246,12 @@ def main() -> None:
             optimizer.step()
             optimizer.zero_grad(set_to_none=True)
             step = index // ACCUMULATION
+            if step == 1:
+                torch.cuda.synchronize(device)
+                print(f"rank={rank} first_step_allocated_gb="
+                      f"{torch.cuda.max_memory_allocated(device) / 1e9:.2f} "
+                      f"first_step_reserved_gb={torch.cuda.max_memory_reserved(device) / 1e9:.2f}",
+                      flush=True)
             if rank == 0 and (step == 1 or step % 500 == 0):
                 print(f"optimizer_step={step}/{padded_rows // ACCUMULATION} elapsed_s={time.time()-start:.0f}", flush=True)
             if step % 2000 == 0:
@@ -255,6 +264,12 @@ def main() -> None:
                 dist.barrier()
     train_stats = torch.tensor([train_sum, len(train_rows)], device=device, dtype=torch.float64)
     dist.all_reduce(train_stats, op=dist.ReduceOp.SUM)
+    memory_stats = torch.tensor([
+        torch.cuda.max_memory_allocated(device),
+        torch.cuda.max_memory_reserved(device),
+        torch.cuda.get_device_properties(device).total_memory,
+    ], device=device, dtype=torch.float64)
+    dist.all_reduce(memory_stats, op=dist.ReduceOp.MAX)
     tuned_validation = full_loss(model, processor, val_rows, device, base=False)
     if rank == 0:
         print("full_adapter_validation_nll", tuned_validation, flush=True)
@@ -289,7 +304,9 @@ def main() -> None:
             "full_test_generation_scores": test_scores,
             "score_definition": "ground_bbox: mean IoU; all other tasks: greedy-generation exact match",
             "elapsed_seconds": time.time() - start,
-            "peak_cuda_memory_gb": torch.cuda.max_memory_allocated(device) / 1e9,
+            "peak_cuda_memory_gb": memory_stats[0].item() / 1e9,
+            "peak_cuda_reserved_gb": memory_stats[1].item() / 1e9,
+            "gpu_total_memory_gb": memory_stats[2].item() / 1e9,
         }
         (OUTPUT_DIR / "metrics.json").write_text(json.dumps(metrics, indent=2) + "\n")
         print(json.dumps(metrics, indent=2), flush=True)

@@ -184,7 +184,7 @@ def stage():
     print(json.dumps({"staging_function_call_id": call.object_id}, indent=2))
 
 
-@app.function(image=gpu_image, gpu="H100:8", cpu=32, memory=131072,
+@app.function(image=gpu_image, gpu="L40S:8", cpu=32, memory=131072,
               timeout=86400, volumes={"/volume": volume})
 def train_complete_dataset() -> dict:
     import json
@@ -264,7 +264,7 @@ def publish_complete_model() -> dict:
             "test_records": metrics["test_records"]}
 
 
-@app.function(image=gpu_image, gpu="H100:2", cpu=8, memory=32768,
+@app.function(image=gpu_image, gpu="L4:2", cpu=8, memory=32768,
               timeout=3600, volumes={"/volume": volume})
 def ddp_smoke() -> dict:
     import json
@@ -282,7 +282,7 @@ def ddp_smoke() -> dict:
     env = os.environ.copy()
     env.update({
         "VISUAL_JEV_DATA_DIR": str(root),
-        "VISUAL_JEV_OUTPUT_DIR": "/volume/ddp_smoke",
+        "VISUAL_JEV_OUTPUT_DIR": "/volume/ddp_smoke_l4",
         "VISUAL_JEV_SMOKE_LIMIT": "32",
         "VISUAL_JEV_DATASET_REPO": REPO_ID,
         "VISUAL_JEV_DATASET_REVISION": "sample-smoke",
@@ -295,7 +295,7 @@ def ddp_smoke() -> dict:
         )
     finally:
         volume.commit()
-    return json.loads(Path("/volume/ddp_smoke/metrics.json").read_text())
+    return json.loads(Path("/volume/ddp_smoke_l4/metrics.json").read_text())
 
 
 @app.local_entrypoint()
