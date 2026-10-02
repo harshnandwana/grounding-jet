@@ -55,6 +55,16 @@ The fixture is synthetic. To rebuild the full release from raw COCO and Visual G
 
 The [budget-limited LoRA model](https://huggingface.co/harshnandwana/visual-jev-budget20-qwen35-0.8b-lora) completed one epoch on **40,000 sampled training records** using two L4 GPUs. It was evaluated on all 1,000 records of the selected validation subset and all 1,000 records of the selected test subset. The [exact metrics](results/budget40k_metrics.json), [benchmark chart](results/budget40k_benchmark.png), and [training details](docs/BUDGET_TRAINING.md) are public. The earlier [256-example check](results/budget_smoke_metrics.json) remains for pipeline reproducibility. The complete 694,255-row training split has **not** been trained or benchmarked.
 
+Run the released adapter on your own local photo:
+
+```bash
+python3 -m pip install -r requirements-inference.txt
+python3 scripts/infer.py --image example.jpg --task spatial_boolean \
+  --question "Is the person to the left of the backpack?"
+```
+
+The model card has a full Python example. Hugging Face currently lists no Inference Provider for this adapter, so its page has no live browser widget. The CLI accepts all five tasks; use `python3 scripts/infer.py --help` for box arguments. Your photo stays local when you run the CLI.
+
 The figure below shows three real cases where the base model failed and the adapter passed, and three where both failed. It includes annotated COCO photo thumbnails in this GitHub repository only. The [companion JSON](results/test_case_examples.json) retains the full predictions; `scripts/plots/plot_test_cases.py` regenerates the figure from local COCO photos and the published test records.
 
 ![Held-out comparison with annotated COCO photos](results/test_case_comparison.png)

@@ -86,7 +86,7 @@ def plot(metrics: dict) -> None:
     plt.close(fig)
 
 
-def card(metrics: dict, manifest: dict) -> str:
+def card(metrics: dict, manifest: dict, repo_id: str = REPO) -> str:
     score_rows = []
     loss_rows = []
     for task in TASKS:
@@ -100,6 +100,7 @@ language: en
 license: apache-2.0
 library_name: peft
 base_model: Qwen/Qwen3.5-0.8B-Base
+base_model_relation: adapter
 datasets:
   - {manifest['dataset_repo']}
 pipeline_tag: image-text-to-text
@@ -142,18 +143,47 @@ Grounding uses mean intersection-over-union; the other tasks use case-insensitiv
 
 See [`metrics.json`](metrics.json) for exact values, [`predictions.jsonl`](predictions.jsonl) for per-record targets and predictions, [`selection_manifest.json`](selection_manifest.json) for sample counts and seed, and [`full_worker.py`](full_worker.py) for prompt serialization.
 
-## Load
+## Use with your own image
+
+The Hub may not show an interactive widget for this adapter unless an Inference Provider serves it. This example runs the model locally. Install `torch`, `transformers>=5.6,<6`, `peft>=0.21.2`, and `pillow`, then place your own photo at `example.jpg`.
 
 ```python
 import torch
+from PIL import Image
 from transformers import AutoProcessor, Qwen3_5ForConditionalGeneration
 from peft import PeftModel
 
 base_id = "Qwen/Qwen3.5-0.8B-Base"
+adapter_id = "{repo_id}"
+device = "cuda" if torch.cuda.is_available() else "cpu"
+dtype = torch.bfloat16 if device == "cuda" else torch.float32
 processor = AutoProcessor.from_pretrained(base_id)
-base = Qwen3_5ForConditionalGeneration.from_pretrained(base_id, dtype=torch.bfloat16).to("cuda")
-model = PeftModel.from_pretrained(base, "{REPO}").eval()
+base = Qwen3_5ForConditionalGeneration.from_pretrained(base_id, dtype=dtype).to(device)
+model = PeftModel.from_pretrained(base, adapter_id).eval()
+
+with Image.open("example.jpg") as source:
+    photo = source.convert("RGB")
+    photo.thumbnail((512, 512))
+
+messages = [{{"role": "user", "content": [
+    {{"type": "image", "image": photo}},
+    {{"type": "text", "text": "Is the person to the left of the backpack?\\n"
+     "Choices: YES, NO, UNKNOWN. Answer with one choice only."}},
+]}}]
+inputs = processor.apply_chat_template(
+    messages, chat_template=processor.tokenizer.chat_template,
+    tokenize=True, add_generation_prompt=True,
+    return_dict=True, return_tensors="pt",
+).to(device)
+with torch.inference_mode():
+    tokens = model.generate(**inputs, max_new_tokens=32, do_sample=False)
+answer = processor.batch_decode(
+    tokens[:, inputs["input_ids"].shape[1]:], skip_special_tokens=True,
+)[0].strip()
+print(answer)
 ```
+
+For box choice, include candidate labels and normalized coordinates in the text prompt. For grounding, request a normalized `[x1, y1, x2, y2]` box. The [command-line inference script](https://github.com/harshnandwana/grounding-jet/blob/main/scripts/infer.py) supports all five tasks and keeps your photo local. The exact prompt formats are in [`full_worker.py`](full_worker.py). The model expects the image and task-specific question together; it is not a general chat assistant.
 
 The adapter is a research demonstration. Visual Genome attributes and relations can be noisy; COCO geometric questions assume annotated objects are visible. Results do not establish OCR, exhaustive counting, calibrated UNKNOWN, or out-of-distribution performance.
 """
@@ -166,6 +196,12 @@ def main() -> None:
     DEST.mkdir(parents=True, exist_ok=True)
     for name in ("adapter_model.safetensors", "adapter_config.json"):
         shutil.copy2(SOURCE / "adapter" / name, DEST / name)
+    config_path = DEST / "adapter_config.json"
+    adapter_config = json.loads(config_path.read_text())
+    if adapter_config.get("task_type") not in (None, "CAUSAL_LM"):
+        raise ValueError("unexpected PEFT task_type")
+    adapter_config["task_type"] = "CAUSAL_LM"
+    config_path.write_text(json.dumps(adapter_config, indent=2) + "\n")
     shutil.copytree(SOURCE / "processor", DEST / "processor", dirs_exist_ok=True)
     for name in ("metrics.json", "predictions.jsonl"):
         shutil.copy2(SOURCE / name, DEST / name)
@@ -173,7 +209,7 @@ def main() -> None:
     for name in ("full_worker.py", "budget_modal.py"):
         shutil.copy2(ROOT / name, DEST / name)
     plot(metrics)
-    (DEST / "README.md").write_text(card(metrics, manifest), encoding="utf-8")
+    (DEST / "README.md").write_text(card(metrics, manifest, REPO), encoding="utf-8")
     token = os.environ.get("HF_TOKEN")
     if not token:
         raise RuntimeError("HF_TOKEN is required for the promised model release")
