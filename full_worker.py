@@ -218,9 +218,6 @@ def main() -> None:
     if rank == 0:
         print(f"gpu_name={torch.cuda.get_device_name(device)} "
               f"gpu_total_gb={torch.cuda.get_device_properties(device).total_memory / 1e9:.2f}", flush=True)
-    baseline_validation = full_loss(model, processor, val_rows, device, base=True)
-    if rank == 0:
-        print("full_baseline_validation_nll", baseline_validation, flush=True)
     ddp = DDP(model, device_ids=[local_rank], output_device=local_rank, find_unused_parameters=False)
     optimizer = torch.optim.AdamW((p for p in ddp.parameters() if p.requires_grad), lr=LEARNING_RATE)
     random.Random(SEED + rank).shuffle(train_rows)
@@ -232,6 +229,8 @@ def main() -> None:
         raise RuntimeError("rank training row alignment failed")
     train_sum = 0.0
     optimizer.zero_grad(set_to_none=True)
+    if rank == 0:
+        print("phase=training", flush=True)
     for index, row in enumerate(train_rows, 1):
         ddp.train()
         sync = index % ACCUMULATION == 0
@@ -270,6 +269,12 @@ def main() -> None:
         torch.cuda.get_device_properties(device).total_memory,
     ], device=device, dtype=torch.float64)
     dist.all_reduce(memory_stats, op=dist.ReduceOp.MAX)
+    if rank == 0:
+        print("phase=baseline_validation", flush=True)
+    baseline_validation = full_loss(model, processor, val_rows, device, base=True)
+    if rank == 0:
+        print("full_baseline_validation_nll", baseline_validation, flush=True)
+        print("phase=adapter_validation", flush=True)
     tuned_validation = full_loss(model, processor, val_rows, device, base=False)
     if rank == 0:
         print("full_adapter_validation_nll", tuned_validation, flush=True)
