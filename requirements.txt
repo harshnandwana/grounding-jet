@@ -1,0 +1,7 @@
+ijson>=3.5,<4
+Pillow>=10,<13
+matplotlib>=3.8,<4
+numpy>=1.26,<3
+huggingface_hub>=0.35,<2
+modal>=1.5,<2
+openai-codex>=0.160,<1

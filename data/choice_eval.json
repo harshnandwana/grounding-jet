@@ -1,0 +1,21 @@
+{
+  "model": "Qwen/Qwen3.5-0.8B-Base",
+  "validation_records": 97,
+  "by_task": {
+    "box_choice": {
+      "n": 51,
+      "base_correct": 18,
+      "adapter_correct": 29
+    },
+    "spatial_boolean": {
+      "n": 46,
+      "base_correct": 28,
+      "adapter_correct": 42
+    }
+  },
+  "blank_image_first_20": {
+    "n": 20,
+    "real_image_correct": 18,
+    "blank_image_correct": 11
+  }
+}

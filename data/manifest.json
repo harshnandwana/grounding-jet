@@ -1,0 +1,44 @@
+{
+  "name": "visual-jev-coco-pilot",
+  "schema_version": "1.0",
+  "status": "pilot_for_schema_review",
+  "source": {
+    "dataset": "COCO 2017 instances",
+    "annotation_archive": "data/coco/annotations/annotations_trainval2017.zip",
+    "annotation_archive_md5": "f4bbac642086de4f52a3fdda2de5fa2c",
+    "annotations_url": "https://s3.amazonaws.com/images.cocodataset.org/annotations/annotations_trainval2017.zip",
+    "terms_url": "https://cocodataset.org/#termsofuse"
+  },
+  "generation": {
+    "code": "dataset.py",
+    "train_input_images": 200,
+    "validation_input_images": 50,
+    "selection": "lowest numeric COCO image IDs in each source split",
+    "model_api_calls": 0,
+    "tasks": [
+      "box_choice",
+      "spatial_boolean"
+    ],
+    "excluded": [
+      "object_absence",
+      "unknown",
+      "counting",
+      "attributes",
+      "OCR",
+      "subtle_relations"
+    ]
+  },
+  "files": {
+    "train": "data/train.jsonl",
+    "validation": "data/validation.jsonl",
+    "train_records": 483,
+    "validation_records": 97,
+    "train_images": 106,
+    "validation_images": 28
+  },
+  "limitations": [
+    "Annotation-derived labels have not been manually audited.",
+    "Source photos may have image-specific copyright and license terms.",
+    "This pilot is intentionally narrow and is not a generic VQA training corpus."
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "images": [{"id": 1, "file_name": "000000000001.jpg", "width": 1000, "height": 800}],
+  "categories": [{"id": 1, "name": "person"}, {"id": 2, "name": "bicycle"}, {"id": 3, "name": "dog"}],
+  "annotations": [
+    {"id": 101, "image_id": 1, "category_id": 1, "bbox": [100, 100, 200, 600], "iscrowd": 0},
+    {"id": 102, "image_id": 1, "category_id": 2, "bbox": [450, 200, 300, 400], "iscrowd": 0},
+    {"id": 103, "image_id": 1, "category_id": 3, "bbox": [780, 400, 150, 200], "iscrowd": 0}
+  ]
+}

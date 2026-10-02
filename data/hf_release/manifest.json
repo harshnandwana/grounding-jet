@@ -1,0 +1,55 @@
+{
+  "splits": {
+    "train": {
+      "records": 694255,
+      "images": 95899,
+      "tasks": {
+        "ground_bbox": 201358,
+        "box_choice": 139922,
+        "spatial_boolean": 152724,
+        "attribute_text": 105999,
+        "relation_text": 94252
+      }
+    },
+    "validation": {
+      "records": 24137,
+      "images": 3291,
+      "tasks": {
+        "ground_bbox": 6817,
+        "box_choice": 4787,
+        "spatial_boolean": 5290,
+        "attribute_text": 3820,
+        "relation_text": 3423
+      }
+    },
+    "test": {
+      "records": 6254,
+      "images": 818,
+      "tasks": {
+        "ground_bbox": 1731,
+        "box_choice": 1221,
+        "spatial_boolean": 1392,
+        "attribute_text": 1011,
+        "relation_text": 899
+      }
+    }
+  },
+  "files_sha256": {
+    "train.jsonl": "f49f8d170405bc973d78ad572a86ebb04d6a1142dea1ff3b1b88cdab22023f2e",
+    "validation.jsonl": "ba42951e0462046a5350e8341e66c854bc8c1a16f492244d2caace6fa22121e3",
+    "test.jsonl": "764785e510b5156d6524784889263363c4b687861bdf41cc12fc15455090a3fb",
+    "images.jsonl": "169cb0f8cd38cfa525b149a780bdcb3125536e402ff5bcdf3dea4718029b046c",
+    "luna_candidates.jsonl": "1d30823b3726a6f54798ba0a6c43fe80cca875e91a5bd7574bba235adeefae88"
+  },
+  "image_files_included": false,
+  "image_manifest_records": 100008,
+  "luna_candidates": {
+    "records": 6823,
+    "images": 2425,
+    "tasks": {
+      "attribute_choice": 5312,
+      "referring_choice": 288,
+      "relation_choice": 1223
+    }
+  }
+}

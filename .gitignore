@@ -1,0 +1,21 @@
+.DS_Store
+.venv/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+*.pem
+*.key
+
+# Keep small examples and the manifest required by full_modal.py.
+# Full datasets, photos, raw archives, checkpoints, and run state stay outside GitHub.
+data/*
+!data/train.jsonl
+!data/validation.jsonl
+!data/manifest.json
+!data/train_smoke_metrics.json
+!data/choice_eval.json
+!data/pilot_metrics.png
+!data/hf_release/
+data/hf_release/*
+!data/hf_release/manifest.json
