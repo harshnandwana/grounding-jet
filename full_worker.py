@@ -342,6 +342,7 @@ def main() -> None:
             "base_model": BASE_MODEL,
             "dataset_repo": os.environ.get("VISUAL_JEV_DATASET_REPO"),
             "dataset_revision": os.environ.get("VISUAL_JEV_DATASET_REVISION"),
+            "dataset_selection": manifest.get("selection"),
             "gpu": torch.cuda.get_device_name(local_rank), "gpu_count": world,
             "train_records_unique": train_total, "train_records_processed_including_padding": int(train_stats[1].item()),
             "validation_records": val_total, "test_records": test_total,

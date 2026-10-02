@@ -19,7 +19,13 @@ TASKS = ("ground_bbox", "box_choice", "spatial_boolean", "attribute_text", "rela
 def validate(metrics: dict, manifest: dict) -> None:
     if metrics["dataset_revision"] != manifest["dataset_revision"]:
         raise ValueError("model and subset dataset revisions differ")
-    if metrics.get("dataset_selection") != manifest["selection"]:
+    selection = metrics.get("dataset_selection")
+    if selection is None:
+        interim = json.loads((SOURCE / "validation_interim.json").read_text())
+        if interim["dataset_revision"] != manifest["dataset_revision"]:
+            raise ValueError("interim validation and subset dataset revisions differ")
+        selection = interim["dataset_selection"]
+    if selection != manifest["selection"]:
         raise ValueError("model and subset selection methods differ")
     for split, key in (("train", "train_records_unique"),
                        ("validation", "validation_records"), ("test", "test_records")):
