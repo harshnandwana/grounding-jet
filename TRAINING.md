@@ -7,7 +7,7 @@
 1. `prepare_full_data` fetches all train, validation, test, image manifest, and release manifest files from Hugging Face, then checks their SHA-256 hashes.
 2. It downloads and archives photos in groups of 5,000. Each complete tar shard and its checksum are committed to the Modal Volume. A rerun skips shards whose checksums match, so a client cancellation loses at most the current group.
 3. After all image shards are present, staging writes a completion report and starts `train_complete_dataset`. This avoids an idle waiting container.
-4. `full_worker.py` runs one LoRA epoch on all 694,255 training rows across eight A100 80 GB GPUs. It calculates baseline and tuned negative log-likelihood over **every** validation row and generates base and tuned answers for **every** held-out test row.
+4. `full_worker.py` runs one LoRA epoch on all 694,255 training rows across four A100 80 GB GPUs, accumulating 16 examples per GPU before each optimizer step. It calculates baseline and tuned negative log-likelihood over **every** validation row and generates base and tuned answers for **every** held-out test row.
 5. `publish_full_model.py` refuses to release if any split or task count is incomplete. When checks pass, it prepares the adapter, processor, prediction log, full metrics, benchmark image, source scripts, and model card, then uploads the model repository using the Modal `HF_TOKEN` secret.
 
 The current implementation uses Qwen3.5-0.8B-Base, rank 16 LoRA on `q_proj` and `v_proj`, AdamW at `5e-5`, gradient accumulation 8 per GPU, and 512 pixel maximum image dimensions. Grounding uses mean intersection-over-union; the other four tasks use greedy generation exact match. Read `full_worker.py` for the exact prompt and target serialization.

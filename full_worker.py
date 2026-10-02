@@ -24,7 +24,7 @@ BASE_MODEL = "Qwen/Qwen3.5-0.8B-Base"
 TASKS = ("ground_bbox", "box_choice", "spatial_boolean", "attribute_text", "relation_text")
 DATA_DIR = Path(os.environ.get("VISUAL_JEV_DATA_DIR", "/tmp/visual_jev_full"))
 OUTPUT_DIR = Path(os.environ.get("VISUAL_JEV_OUTPUT_DIR", "/volume/full_run"))
-ACCUMULATION = 8
+ACCUMULATION = int(os.environ.get("VISUAL_JEV_ACCUMULATION", "8"))
 LEARNING_RATE = 5e-5
 SEED = 43801
 

@@ -184,7 +184,7 @@ def stage():
     print(json.dumps({"staging_function_call_id": call.object_id}, indent=2))
 
 
-@app.function(image=gpu_image, gpu="A100-80GB:8", cpu=32, memory=131072,
+@app.function(image=gpu_image, gpu="A100-80GB:4", cpu=16, memory=65536,
               timeout=86400, volumes={"/volume": volume})
 def train_complete_dataset() -> dict:
     import json
@@ -218,11 +218,12 @@ def train_complete_dataset() -> dict:
         "VISUAL_JEV_OUTPUT_DIR": "/volume/full_run",
         "VISUAL_JEV_DATASET_REPO": REPO_ID,
         "VISUAL_JEV_DATASET_REVISION": DATASET_REVISION,
+        "VISUAL_JEV_ACCUMULATION": "16",
     })
     print(f"staged_images={report['images']} elapsed_s={time.time()-start:.0f}", flush=True)
     try:
         subprocess.run(
-            [sys.executable, "-m", "torch.distributed.run", "--standalone", "--nproc_per_node=8",
+            [sys.executable, "-m", "torch.distributed.run", "--standalone", "--nproc_per_node=4",
              "/root/full_worker.py"],
             env=env, check=True,
         )
