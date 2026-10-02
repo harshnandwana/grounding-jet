@@ -14,9 +14,9 @@ The 100,008 distinct photos are from COCO 2017. All records for one photo remain
 
 - [COCO 2017](https://cocodataset.org/#download) supplies instance boxes, categories, image metadata, and source photo links. Its [terms of use](https://github.com/cocodataset/cocodataset.github.io/blob/master/dataset/termsofuse.htm) license COCO annotations under CC BY 4.0 and say COCO does not own the photos. Each photo retains its own rights. The released `images.jsonl` records the upstream URL, original Flickr URL, and image license information where available.
 - [Visual Genome v1.2](https://visualgenome.org/api/v0/api_readme) supplies selected color attributes and relationships for photos overlapping COCO. Those labels can be noisy and are marked `visual_genome_annotation_pending_audit` in the release. Review its source terms before reusing the annotations.
-- `generate_luna.py` uses `gpt-6-luna` through the Codex Python SDK to propose image grounded questions. Another Luna pass checks them; this is not independent human review. The resulting `luna_candidates.jsonl` is a candidate set, not part of training or evaluation.
+- `scripts/data/generate_luna.py` uses `gpt-6-luna` through the Codex Python SDK to propose image grounded questions. Another Luna pass checks them; this is not independent human review. The resulting `luna_candidates.jsonl` is a candidate set, not part of training or evaluation.
 
-The code license in `LICENSE` applies to this repository's software and original documentation. It does not relicense third party annotations, photos, or the Qwen base model. The [Qwen3.5-0.8B-Base model card](https://huggingface.co/Qwen/Qwen3.5-0.8B-Base) gives its separate license.
+The code license in [`LICENSE`](../LICENSE) applies to this repository's software and original documentation. It does not relicense third party annotations, photos, or the Qwen base model. The [Qwen3.5-0.8B-Base model card](https://huggingface.co/Qwen/Qwen3.5-0.8B-Base) gives its separate license.
 
 ## Record design
 
@@ -28,10 +28,12 @@ The training input contains the photo, question, offered choices, and any candid
 
 The builders expect `data/coco/annotations/instances_train2017.json`, `data/coco/annotations/instances_val2017.json`, COCO photos under `data/coco/train2017/` and `data/coco/val2017/`, and Visual Genome source archives under `data/vg/`. Run the builders in this order:
 
+Install the package first with `python3 -m pip install -e . -r requirements.txt`, and run these commands from the repository root:
+
 ```bash
-python3 build_full_dataset.py
-python3 build_vg.py
-python3 package_hf_dataset.py
+python3 scripts/data/build_full_dataset.py
+python3 scripts/data/build_vg.py
+python3 scripts/data/package_hf_dataset.py
 ```
 
-`package_hf_dataset.py` validates rows, checks image disjointness across splits, writes the image license manifest, and reports file hashes. It sets `image_files_included` to `false` by design. To reproduce the published release exactly, use the pinned Hugging Face commit instead of rebuilding from potentially changed upstream files.
+`scripts/data/package_hf_dataset.py` validates rows, checks image disjointness across splits, writes the image license manifest, and reports file hashes. It sets `image_files_included` to `false` by design. To reproduce the published release exactly, use the pinned Hugging Face commit instead of rebuilding from potentially changed upstream files.

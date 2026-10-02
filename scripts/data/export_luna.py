@@ -6,10 +6,10 @@ from collections import Counter
 import json
 from pathlib import Path
 
-from dataset import validate_record
+from visual_jev.dataset import validate_record
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data" / "full"
 
 

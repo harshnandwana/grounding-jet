@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]
 METRICS = ROOT / "data" / "model_full" / "visual-jev-v1-l40s-lora" / "metrics.json"
 OUTPUT = ROOT / "data" / "model_full" / "visual-jev-v1-l40s-lora" / "benchmark.png"
 

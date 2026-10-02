@@ -9,10 +9,11 @@ import shutil
 
 
 ROOT = Path(__file__).resolve().parent
-SOURCE = Path(os.environ.get("VISUAL_JEV_BUDGET_SOURCE", ROOT / "data" / "budget20" / "run"))
-MANIFEST = Path(os.environ.get("VISUAL_JEV_BUDGET_MANIFEST", ROOT / "data" / "budget20" / "manifest.json"))
-DEST = Path(os.environ.get("VISUAL_JEV_BUDGET_RELEASE", ROOT / "data" / "budget20" / "release"))
-REPO = "harshnandwana/visual-jev-budget20-qwen35-0.8b-lora"
+PROJECT_ROOT = ROOT.parents[1] if (ROOT.parents[1] / "pyproject.toml").is_file() else ROOT
+SOURCE = Path(os.environ.get("VISUAL_JEV_BUDGET_SOURCE", PROJECT_ROOT / "data" / "budget20" / "run"))
+MANIFEST = Path(os.environ.get("VISUAL_JEV_BUDGET_MANIFEST", PROJECT_ROOT / "data" / "budget20" / "manifest.json"))
+DEST = Path(os.environ.get("VISUAL_JEV_BUDGET_RELEASE", PROJECT_ROOT / "data" / "budget20" / "release"))
+REPO = os.environ.get("VISUAL_JEV_MODEL_REPO", "harshnandwana/visual-jev-budget20-qwen35-0.8b-lora")
 TASKS = ("ground_bbox", "box_choice", "spatial_boolean", "attribute_text", "relation_text")
 
 

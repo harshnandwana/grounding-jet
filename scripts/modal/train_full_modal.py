@@ -1,7 +1,7 @@
 """Train and benchmark the five-task Visual Jev v1 sample on one Modal L40S.
 
 Upload data/train_full_v1/bundle.tar to Modal Volume visual-jev-full-v1 at
-/bundle.tar, then run: modal run train_full_modal.py::main
+/bundle.tar, then run: modal run scripts/modal/train_full_modal.py::main
 """
 
 from pathlib import Path
@@ -9,7 +9,7 @@ from pathlib import Path
 import modal
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]
 BASE_MODEL = "Qwen/Qwen3.5-0.8B-Base"
 RUN_NAME = "visual-jev-v1-l40s-lora"
 

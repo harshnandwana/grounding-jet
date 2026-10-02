@@ -1,7 +1,7 @@
 """Render a static PNG dashboard of the Modal L4 smoke-test results.
 
-Requires Pillow. Run with the Python environment containing PIL:
-    /Users/harsh/miniconda3/bin/python3 plot_results.py
+Requires Pillow and local pilot photos. From the repository root:
+    python3 scripts/plots/plot_results.py
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data"
 OUT = DATA / "visual_jev_l4_results.png"
 WIDTH, HEIGHT = 2000, 1690
@@ -27,11 +27,16 @@ GRID = "#DCE3EB"
 WHITE = "#FFFFFF"
 
 FONT_DIR = Path("/System/Library/Fonts/Supplemental")
+FALLBACK_FONT_DIR = Path("/usr/share/fonts/truetype/dejavu")
 
 
 def font(size: int, bold: bool = False):
-    name = "Arial Bold.ttf" if bold else "Arial.ttf"
-    return ImageFont.truetype(str(FONT_DIR / name), size)
+    mac_name = "Arial Bold.ttf" if bold else "Arial.ttf"
+    linux_name = "DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf"
+    for path in (FONT_DIR / mac_name, FALLBACK_FONT_DIR / linux_name):
+        if path.is_file():
+            return ImageFont.truetype(str(path), size)
+    return ImageFont.load_default(size=size)
 
 
 F12, F16, F18, F20, F23, F28, F34, F44 = [font(s) for s in (12, 16, 18, 20, 23, 28, 34, 44)]

@@ -13,12 +13,14 @@ The complete annotation dataset remains available at [Visual Jev decisions v1](h
 
 ## Run and audit
 
+Run these commands from the repository root after installing `requirements.txt` and configuring Modal. For your own fork of the same five-task schema, set `VISUAL_JEV_DATASET_REPO`, `VISUAL_JEV_DATASET_REVISION`, and `VISUAL_JEV_MODEL_REPO` in the shell before deployment. You can also set `VISUAL_JEV_MODAL_VOLUME` to isolate your staged photos and results.
+
 ```bash
-modal run budget_modal.py::probe
-modal run budget_modal.py::stage
-modal run budget_modal.py::smoke
-modal deploy budget_modal.py
-modal run budget_modal.py::train
+modal run scripts/modal/budget_modal.py::probe
+modal run scripts/modal/budget_modal.py::stage
+modal run scripts/modal/budget_modal.py::smoke
+modal deploy scripts/modal/budget_modal.py
+modal run scripts/modal/budget_modal.py::train
 ```
 
 The Modal app is `visual-jev-budget20`; staged metadata and the selected image archive are under `/budget20` in Volume `visual-jev-full-v1`. The publisher uses the Modal secret `visual-jev-hf-publish` for `HF_TOKEN` and targets [the budget model repository](https://huggingface.co/harshnandwana/visual-jev-budget20-qwen35-0.8b-lora). Check the model card's exact split sizes and per-task metrics after upload. The complete-dataset model is a separate future run that would require a larger compute budget.
@@ -27,9 +29,9 @@ The `train` entrypoint calls the deployed app. Its returned function-call ID ide
 
 ## Verified training check
 
-The first two-L4 smoke run completed one optimizer step on 64 examples, then evaluated all 64 selected validation and 64 selected test examples. It is a pipeline check, not the 40,000-row model benchmark. The measured validation mean negative log-likelihood fell from 1.033 to 0.983 on box choice and from 1.674 to 1.619 on attribute text; other per-task values are in [`budget_smoke_microbatch4_metrics.json`](budget_smoke_microbatch4_metrics.json). Peak GPU memory allocation was 12.66 GB and peak reservation was 16.70 GB on an L4 with 23.66 GB total. A later full-data batch exceeded the 24 GB L4 limit, so the production configuration uses microbatch 2 with gradient accumulation 16. The small test generation scores vary by task and must not be treated as final quality estimates.
+The first two-L4 smoke run completed one optimizer step on 64 examples, then evaluated all 64 selected validation and 64 selected test examples. It is a pipeline check, not the 40,000-row model benchmark. The measured validation mean negative log-likelihood fell from 1.033 to 0.983 on box choice and from 1.674 to 1.619 on attribute text; other per-task values are in [`budget_smoke_microbatch4_metrics.json`](../results/budget_smoke_microbatch4_metrics.json). Peak GPU memory allocation was 12.66 GB and peak reservation was 16.70 GB on an L4 with 23.66 GB total. A later full-data batch exceeded the 24 GB L4 limit, so the production configuration uses microbatch 2 with gradient accumulation 16. The small test generation scores vary by task and must not be treated as final quality estimates.
 
-The revised two-L4 check completed **four optimizer steps on 256 examples** with microbatch 2. It evaluated 256 selected validation rows and generated predictions for 256 selected test rows. The measured results are in [`budget_smoke_metrics.json`](budget_smoke_metrics.json):
+The revised two-L4 check completed **four optimizer steps on 256 examples** with microbatch 2. It evaluated 256 selected validation rows and generated predictions for 256 selected test rows. The measured results are in [`budget_smoke_metrics.json`](../results/budget_smoke_metrics.json):
 
 | Task | Validation NLL, base → adapter | Test score, base → adapter |
 | --- | ---: | ---: |

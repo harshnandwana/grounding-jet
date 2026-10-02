@@ -9,10 +9,12 @@ import shutil
 
 
 ROOT = Path(__file__).resolve().parent
-SOURCE = Path(os.environ.get("VISUAL_JEV_FULL_SOURCE", ROOT / "data" / "model_full" / "visual-jev-full-h100-lora"))
-DEST = Path(os.environ.get("VISUAL_JEV_FULL_RELEASE", ROOT / "data" / "hf_full_model_release"))
-REPO = "harshnandwana/visual-jev-full-qwen35-0.8b-lora"
-DATASET = "harshnandwana/visual-jev-decisions-v1"
+PROJECT_ROOT = ROOT.parents[1] if (ROOT.parents[1] / "pyproject.toml").is_file() else ROOT
+SOURCE = Path(os.environ.get("VISUAL_JEV_FULL_SOURCE", PROJECT_ROOT / "data" / "model_full" / "visual-jev-full-h100-lora"))
+DEST = Path(os.environ.get("VISUAL_JEV_FULL_RELEASE", PROJECT_ROOT / "data" / "hf_full_model_release"))
+REPO = os.environ.get("VISUAL_JEV_MODEL_REPO", "harshnandwana/visual-jev-full-qwen35-0.8b-lora")
+DATASET = os.environ.get("VISUAL_JEV_DATASET_REPO", "harshnandwana/visual-jev-decisions-v1")
+MANIFEST = Path(os.environ.get("VISUAL_JEV_FULL_MANIFEST", PROJECT_ROOT / "data" / "hf_release" / "manifest.json"))
 TASKS = ["ground_bbox", "box_choice", "spatial_boolean", "attribute_text", "relation_text"]
 
 
@@ -147,7 +149,7 @@ def main() -> None:
     if not (SOURCE / "metrics.json").is_file():
         raise FileNotFoundError("download the completed full-run artifacts from Modal first")
     metrics = json.loads((SOURCE / "metrics.json").read_text())
-    manifest = json.loads((ROOT / "data" / "hf_release" / "manifest.json").read_text())
+    manifest = json.loads(MANIFEST.read_text())
     for split, key in (("train", "train_records_unique"), ("validation", "validation_records"), ("test", "test_records")):
         if metrics[key] != manifest["splits"][split]["records"]:
             raise ValueError(f"incomplete {split} use: {metrics[key]}")

@@ -12,10 +12,10 @@ import hashlib
 import json
 from pathlib import Path
 
-from dataset import make_records, norm_box
+from visual_jev.dataset import make_records, norm_box
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data"
 OUT = DATA / "full"
 

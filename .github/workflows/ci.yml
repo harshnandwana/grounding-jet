@@ -12,7 +12,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Install package
+        run: python -m pip install -e .
       - name: Syntax check
-        run: python -m py_compile *.py
+        run: python -m compileall -q src scripts tests
       - name: Dataset tests
-        run: python -m unittest -q
+        run: python -m unittest discover -s tests -q

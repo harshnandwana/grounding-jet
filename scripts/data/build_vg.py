@@ -14,10 +14,10 @@ import zipfile
 
 import ijson
 
-from dataset import validate_record
+from visual_jev.dataset import validate_record
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data"
 VG = DATA / "vg"
 OUT_DIR = DATA / "full"

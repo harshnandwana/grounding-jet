@@ -9,7 +9,7 @@ import random
 import tarfile
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "data" / "full"
 OUT = ROOT / "data" / "train_full_v1"
 TASKS = ("ground_bbox", "box_choice", "spatial_boolean", "attribute_text", "relation_text")

@@ -2,15 +2,15 @@ import json
 from pathlib import Path
 import unittest
 
-from dataset import make_records, validate_record
+from visual_jev.dataset import make_records, validate_record
 
 
 class DatasetTest(unittest.TestCase):
     def setUp(self):
-        source = json.loads(Path("fixtures/coco_instances.json").read_text())
+        source = json.loads((Path(__file__).resolve().parent / "fixtures" / "coco_instances.json").read_text())
         self.records = make_records(source["images"][0], source["annotations"],
                                     {item["id"]: item["name"] for item in source["categories"]},
-                                    "train2017", Path("fixtures"))
+                                    "train2017", Path(__file__).resolve().parent / "fixtures")
 
     def test_fixture_records_are_valid_and_balanced(self):
         self.assertEqual(len(self.records), 9)
@@ -20,11 +20,11 @@ class DatasetTest(unittest.TestCase):
         self.assertEqual(spatial_answers.count("YES"), spatial_answers.count("NO"))
 
     def test_duplicate_category_does_not_create_ambiguous_grounding(self):
-        source = json.loads(Path("fixtures/coco_instances.json").read_text())
+        source = json.loads((Path(__file__).resolve().parent / "fixtures" / "coco_instances.json").read_text())
         extra = {**source["annotations"][0], "id": 104, "bbox": [350, 100, 50, 200]}
         records = make_records(source["images"][0], source["annotations"] + [extra],
                                {item["id"]: item["name"] for item in source["categories"]},
-                               "train2017", Path("fixtures"))
+                               "train2017", Path(__file__).resolve().parent / "fixtures")
         self.assertFalse(any(record["task"] == "box_choice" and "person" in record["question"] for record in records))
 
     def test_wrong_candidate_is_rejected(self):

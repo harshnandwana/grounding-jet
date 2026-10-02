@@ -1,19 +1,23 @@
 """Fetch HF annotations and checkpoint COCO photos on Modal before training.
 
 Photos are deliberately absent from Hugging Face. Start the remote function with
-`modal run --detach full_modal.py::prepare_full_data`. Every completed photo
+`modal run --detach scripts/modal/full_modal.py::prepare_full_data`. Every completed photo
 shard is committed to the Volume, so a cancelled call can resume.
 """
 
+import os
 from pathlib import Path
 
 import modal
 
 
-REPO_ID = "harshnandwana/visual-jev-decisions-v1"
-DATASET_REVISION = "687c745c34846d104ee85af802b9fd444a854f5d"
-app = modal.App("visual-jev-full-data")
-volume = modal.Volume.from_name("visual-jev-full-v1", create_if_missing=True)
+REPO_ID = os.environ.get("VISUAL_JEV_DATASET_REPO", "harshnandwana/visual-jev-decisions-v1")
+DATASET_REVISION = os.environ.get("VISUAL_JEV_DATASET_REVISION", "687c745c34846d104ee85af802b9fd444a854f5d")
+MODEL_REPO_ID = os.environ.get("VISUAL_JEV_MODEL_REPO", "harshnandwana/visual-jev-full-qwen35-0.8b-lora")
+APP_NAME = os.environ.get("VISUAL_JEV_FULL_APP", "visual-jev-full-data")
+VOLUME_NAME = os.environ.get("VISUAL_JEV_MODAL_VOLUME", "visual-jev-full-v1")
+app = modal.App(APP_NAME)
+volume = modal.Volume.from_name(VOLUME_NAME, create_if_missing=True)
 prep_image = modal.Image.debian_slim(python_version="3.11").pip_install("huggingface_hub>=0.35,<2")
 gpu_image = (
     modal.Image.debian_slim(python_version="3.11")
@@ -27,8 +31,6 @@ publish_image = (
     .add_local_file(Path(__file__).resolve().parent / "publish_full_model.py", "/root/publish_full_model.py")
     .add_local_file(Path(__file__).resolve().parent / "full_worker.py", "/root/full_worker.py")
     .add_local_file(Path(__file__).resolve().parent / "full_modal.py", "/root/full_modal.py")
-    .add_local_file(Path(__file__).resolve().parent / "data/hf_release/manifest.json",
-                    "/root/data/hf_release/manifest.json")
 )
 
 
@@ -255,10 +257,13 @@ def publish_complete_model() -> dict:
     env = os.environ.copy()
     env["VISUAL_JEV_FULL_SOURCE"] = "/volume/full_run"
     env["VISUAL_JEV_FULL_RELEASE"] = "/tmp/visual_jev_model_release"
+    env["VISUAL_JEV_FULL_MANIFEST"] = "/volume/full_dataset/manifest.json"
+    env["VISUAL_JEV_DATASET_REPO"] = REPO_ID
+    env["VISUAL_JEV_MODEL_REPO"] = MODEL_REPO_ID
     subprocess.run([sys.executable, "/root/publish_full_model.py"],
                    env=env, check=True)
     metrics = json.loads(Path("/volume/full_run/metrics.json").read_text())
-    return {"model_repo": "harshnandwana/visual-jev-full-qwen35-0.8b-lora",
+    return {"model_repo": MODEL_REPO_ID,
             "dataset_revision": metrics["dataset_revision"],
             "train_records": metrics["train_records_unique"],
             "validation_records": metrics["validation_records"],

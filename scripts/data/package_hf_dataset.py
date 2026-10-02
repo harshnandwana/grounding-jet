@@ -10,10 +10,10 @@ import shutil
 
 import ijson
 
-from dataset import validate_record
+from visual_jev.dataset import validate_record
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "data" / "full"
 DEST = ROOT / "data" / "hf_release"
 
@@ -112,9 +112,9 @@ def main() -> None:
         raise ValueError("Luna candidate image outside train split")
     report["luna_candidates"] = {"records": sum(counts.values()), "images": len(images), "tasks": dict(counts)}
     report["files_sha256"][output.name] = sha256(output)
-    shutil.copy2(ROOT / "dataset.py", DEST / "dataset.py")
-    shutil.copy2(ROOT / "build_full_dataset.py", DEST / "build_full_dataset.py")
-    shutil.copy2(ROOT / "build_vg.py", DEST / "build_vg.py")
+    shutil.copy2(ROOT / "src" / "visual_jev" / "dataset.py", DEST / "dataset.py")
+    shutil.copy2(ROOT / "scripts" / "data" / "build_full_dataset.py", DEST / "build_full_dataset.py")
+    shutil.copy2(ROOT / "scripts" / "data" / "build_vg.py", DEST / "build_vg.py")
     card = f"""---
 language: en
 license: other

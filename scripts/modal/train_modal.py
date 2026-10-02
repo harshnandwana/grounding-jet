@@ -1,7 +1,7 @@
 """Bounded Qwen3.5 vision LoRA smoke test on one Modal L4.
 
-Run: modal run train_modal.py::main
-Evaluate saved adapter: modal run train_modal.py::eval_main
+Run: modal run scripts/modal/train_modal.py::main
+Evaluate saved adapter: modal run scripts/modal/train_modal.py::eval_main
 """
 
 from pathlib import Path
@@ -9,7 +9,7 @@ from pathlib import Path
 import modal
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]
 MODEL_ID = "Qwen/Qwen3.5-0.8B-Base"
 RUN_NAME = "qwen35-08b-coco-pilot-l4"
 

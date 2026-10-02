@@ -1,18 +1,22 @@
 """Bounded, photo-free HF subset training for a $20 Modal credit budget."""
 
+import os
 from pathlib import Path
 
 import modal
 
 
-REPO_ID = "harshnandwana/visual-jev-decisions-v1"
-DATASET_REVISION = "687c745c34846d104ee85af802b9fd444a854f5d"
+REPO_ID = os.environ.get("VISUAL_JEV_DATASET_REPO", "harshnandwana/visual-jev-decisions-v1")
+DATASET_REVISION = os.environ.get("VISUAL_JEV_DATASET_REVISION", "687c745c34846d104ee85af802b9fd444a854f5d")
+MODEL_REPO_ID = os.environ.get("VISUAL_JEV_MODEL_REPO", "harshnandwana/visual-jev-budget20-qwen35-0.8b-lora")
+APP_NAME = os.environ.get("VISUAL_JEV_BUDGET_APP", "visual-jev-budget20")
+VOLUME_NAME = os.environ.get("VISUAL_JEV_MODAL_VOLUME", "visual-jev-full-v1")
 TASKS = ("ground_bbox", "box_choice", "spatial_boolean", "attribute_text", "relation_text")
 PER_TASK = {"train": 8000, "validation": 200, "test": 200}
 SEED = 43801
 
-app = modal.App("visual-jev-budget20")
-volume = modal.Volume.from_name("visual-jev-full-v1")
+app = modal.App(APP_NAME)
+volume = modal.Volume.from_name(VOLUME_NAME)
 prep_image = modal.Image.debian_slim(python_version="3.11").pip_install("huggingface_hub>=0.35,<2")
 gpu_image = (
     modal.Image.debian_slim(python_version="3.11")
@@ -64,7 +68,9 @@ def prepare_budget_dataset() -> dict:
     if original["image_files_included"]:
         raise ValueError("photo bytes must stay off Hugging Face")
     staged = json.loads((source / "prepare_report.json").read_text())
-    if staged["dataset_revision"] != DATASET_REVISION or staged["images"] != 100008:
+    if (staged["dataset_repo"] != REPO_ID
+            or staged["dataset_revision"] != DATASET_REVISION
+            or staged["images"] != original["image_manifest_records"]):
         raise ValueError("the complete photo shard set is not staged")
 
     selected_paths = set()
@@ -273,7 +279,7 @@ def train_budget() -> dict:
 def train():
     import json
     # Spawn on the deployed app so the call survives this entrypoint's app shutdown.
-    call = modal.Function.from_name("visual-jev-budget20", "train_budget").spawn()
+    call = modal.Function.from_name(APP_NAME, "train_budget").spawn()
     print(json.dumps({"training_function_call_id": call.object_id}))
 
 
@@ -290,9 +296,10 @@ def publish_budget_model() -> dict:
     env["VISUAL_JEV_BUDGET_SOURCE"] = "/volume/budget20/run"
     env["VISUAL_JEV_BUDGET_MANIFEST"] = "/volume/budget20/manifest.json"
     env["VISUAL_JEV_BUDGET_RELEASE"] = "/tmp/visual_jev_budget20_release"
+    env["VISUAL_JEV_MODEL_REPO"] = MODEL_REPO_ID
     subprocess.run([sys.executable, "/root/publish_budget_model.py"], env=env, check=True)
     metrics = json.loads(Path("/volume/budget20/run/metrics.json").read_text())
-    return {"model_repo": "harshnandwana/visual-jev-budget20-qwen35-0.8b-lora",
+    return {"model_repo": MODEL_REPO_ID,
             "train_records": metrics["train_records_unique"],
             "validation_records": metrics["validation_records"],
             "test_records": metrics["test_records"]}

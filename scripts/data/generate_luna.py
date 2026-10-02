@@ -17,7 +17,7 @@ import threading
 from openai_codex import ApprovalMode, Codex, LocalImageInput, Sandbox, TextInput
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data" / "full"
 MODEL = "gpt-6-luna"
 STOP = threading.Event()
