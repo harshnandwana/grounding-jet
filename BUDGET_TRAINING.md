@@ -28,3 +28,15 @@ The `train` entrypoint calls the deployed app. Its returned function-call ID ide
 ## Verified training check
 
 The first two-L4 smoke run completed one optimizer step on 64 examples, then evaluated all 64 selected validation and 64 selected test examples. It is a pipeline check, not the 40,000-row model benchmark. The measured validation mean negative log-likelihood fell from 1.033 to 0.983 on box choice and from 1.674 to 1.619 on attribute text; other per-task values are in [`budget_smoke_microbatch4_metrics.json`](budget_smoke_microbatch4_metrics.json). Peak GPU memory allocation was 12.66 GB and peak reservation was 16.70 GB on an L4 with 23.66 GB total. A later full-data batch exceeded the 24 GB L4 limit, so the production configuration uses microbatch 2 with gradient accumulation 16. The small test generation scores vary by task and must not be treated as final quality estimates.
+
+The revised two-L4 check completed **four optimizer steps on 256 examples** with microbatch 2. It evaluated 256 selected validation rows and generated predictions for 256 selected test rows. The measured results are in [`budget_smoke_metrics.json`](budget_smoke_metrics.json):
+
+| Task | Validation NLL, base → adapter | Test score, base → adapter |
+| --- | ---: | ---: |
+| Ground box | 0.953 → 0.934 | Mean IoU 0.034 → 0.083 |
+| Box choice | 1.038 → 0.754 | Exact match 0.000 → 0.078 |
+| Spatial Boolean | 0.400 → 0.328 | Exact match 0.679 → 0.660 |
+| Attribute text | 1.560 → 1.098 | Exact match 0.020 → 0.060 |
+| Relation text | 4.117 → 3.690 | Exact match 0.000 → 0.000 |
+
+This confirms the training and evaluation path runs end to end. Its tiny training set does not support a quality claim. Peak reserved GPU memory was 15.34 GB of 23.66 GB; the production run's first optimizer step reserved 8.79 GB at most across its two L4 ranks.
