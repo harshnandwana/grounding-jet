@@ -109,9 +109,9 @@ tags:
   - qwen3.5
 ---
 
-# Visual Jev budget-limited LoRA
+# Visual Jev sampled LoRA ({metrics['train_records_unique']:,} train records)
 
-This PEFT adapter was trained on a **40,000-row stratified subset**, not the entire training split, of [Visual Jev decisions v1](https://huggingface.co/datasets/{manifest['dataset_repo']}) at revision `{manifest['dataset_revision']}`. It answers a task-specific question about an image with a normalized box, choice, or short text.
+This PEFT adapter was trained on a **{metrics['train_records_unique']:,}-row stratified subset**, not the entire training split, of [Visual Jev decisions v1](https://huggingface.co/datasets/{manifest['dataset_repo']}) at revision `{manifest['dataset_revision']}`. It answers a task-specific question about an image with a normalized box, choice, or short text.
 
 ![Held-out subset benchmark](benchmark.png)
 

@@ -1,4 +1,4 @@
-"""Bounded, photo-free HF subset training for a $20 Modal credit budget."""
+"""Bounded, photo-free HF subset training with a configurable train size."""
 
 import os
 from pathlib import Path
@@ -10,9 +10,14 @@ REPO_ID = os.environ.get("VISUAL_JEV_DATASET_REPO", "harshnandwana/visual-jev-de
 DATASET_REVISION = os.environ.get("VISUAL_JEV_DATASET_REVISION", "687c745c34846d104ee85af802b9fd444a854f5d")
 MODEL_REPO_ID = os.environ.get("VISUAL_JEV_MODEL_REPO", "harshnandwana/visual-jev-budget20-qwen35-0.8b-lora")
 APP_NAME = os.environ.get("VISUAL_JEV_BUDGET_APP", "visual-jev-budget20")
+RUN_NAME = os.environ.get("VISUAL_JEV_RUN_NAME", "budget20")
+if not RUN_NAME.isidentifier():
+    raise ValueError("VISUAL_JEV_RUN_NAME must be an identifier")
+TRAIN_TIMEOUT = int(os.environ.get("VISUAL_JEV_TRAIN_TIMEOUT", "21600"))
 VOLUME_NAME = os.environ.get("VISUAL_JEV_MODAL_VOLUME", "visual-jev-full-v1")
 TASKS = ("ground_bbox", "box_choice", "spatial_boolean", "attribute_text", "relation_text")
-PER_TASK = {"train": 8000, "validation": 200, "test": 200}
+PER_TASK = {"train": int(os.environ.get("VISUAL_JEV_TRAIN_PER_TASK", "8000")),
+            "validation": 200, "test": 200}
 SEED = 43801
 
 app = modal.App(APP_NAME)
@@ -37,7 +42,7 @@ publish_image = (
 
 @app.function(image=prep_image, cpu=4, memory=8192, timeout=3600,
               volumes={"/volume": volume})
-def prepare_budget_dataset() -> dict:
+def prepare_budget_dataset(run_name: str = "budget20", per_task: dict | None = None) -> dict:
     import hashlib
     import json
     import random
@@ -49,14 +54,17 @@ def prepare_budget_dataset() -> dict:
 
     started = time.time()
     source = Path("/volume/full_dataset")
-    target = Path("/volume/budget20")
+    per_task = per_task or {"train": 8000, "validation": 200, "test": 200}
+    if not run_name.isidentifier():
+        raise ValueError("run_name must be an identifier")
+    target = Path(f"/volume/{run_name}")
     target.mkdir(parents=True, exist_ok=True)
     ready = target / "manifest.json"
     archive_path = target / "images.tar"
     if ready.is_file() and archive_path.is_file():
         prior = json.loads(ready.read_text())
         if (prior.get("dataset_revision") == DATASET_REVISION
-                and prior.get("selection", {}).get("per_task") == PER_TASK):
+                and prior.get("selection", {}).get("per_task") == per_task):
             return prior
 
     metadata = Path("/tmp/budget20_hf")
@@ -75,7 +83,7 @@ def prepare_budget_dataset() -> dict:
 
     selected_paths = set()
     split_reports = {}
-    for split_index, split in enumerate(PER_TASK):
+    for split_index, split in enumerate(per_task):
         rng = random.Random(SEED + split_index)
         seen = Counter()
         selected = {task: [] for task in TASKS}
@@ -87,7 +95,7 @@ def prepare_budget_dataset() -> dict:
                     continue
                 seen[task] += 1
                 bucket = selected[task]
-                limit = PER_TASK[split]
+                limit = per_task[split]
                 if len(bucket) < limit:
                     bucket.append(row)
                 else:
@@ -96,7 +104,7 @@ def prepare_budget_dataset() -> dict:
                         bucket[at] = row
         rows = []
         for task in TASKS:
-            if len(selected[task]) != PER_TASK[split]:
+            if len(selected[task]) != per_task[split]:
                 raise ValueError(f"insufficient rows for {split}/{task}")
             rows.extend(selected[task])
         random.Random(SEED + 100 + split_index).shuffle(rows)
@@ -138,7 +146,7 @@ def prepare_budget_dataset() -> dict:
         "dataset_revision": DATASET_REVISION,
         "splits": split_reports,
         "selection": {"method": "per-task reservoir sampling", "seed": SEED,
-                      "per_task": PER_TASK, "photo_files_on_hf": False},
+                      "per_task": per_task, "photo_files_on_hf": False},
         "unique_images": len(selected_paths),
         "image_archive_bytes": archive_path.stat().st_size,
         "image_archive_sha256": digest.hexdigest(),
@@ -155,7 +163,7 @@ def prepare_budget_dataset() -> dict:
 @app.local_entrypoint()
 def stage():
     import json
-    result = prepare_budget_dataset.remote()
+    result = prepare_budget_dataset.remote(RUN_NAME, PER_TASK)
     print(json.dumps({"splits": result["splits"], "unique_images": result["unique_images"],
                       "preparation_seconds": result["preparation_seconds"]}, indent=2))
 
@@ -212,9 +220,10 @@ def smoke():
     print(json.dumps(smoke_budget_batch.remote(), indent=2))
 
 
-@app.function(image=gpu_image, gpu="L4:2", cpu=8, memory=32768, timeout=21600,
+@app.function(image=gpu_image, gpu="L4:2", cpu=8, memory=32768, timeout=TRAIN_TIMEOUT,
               volumes={"/volume": volume})
-def train_budget() -> dict:
+def train_budget(run_name: str = "budget20", per_task: dict | None = None,
+                 model_repo: str = "harshnandwana/visual-jev-budget20-qwen35-0.8b-lora") -> dict:
     import hashlib
     import json
     import os
@@ -227,11 +236,17 @@ def train_budget() -> dict:
     from huggingface_hub import snapshot_download
 
     started = time.time()
-    staged = Path("/volume/budget20")
+    per_task = per_task or {"train": 8000, "validation": 200, "test": 200}
+    if not run_name.isidentifier():
+        raise ValueError("run_name must be an identifier")
+    run_dir = f"/volume/{run_name}"
+    staged = Path(run_dir)
     selection = json.loads((staged / "manifest.json").read_text())
     if selection["dataset_revision"] != DATASET_REVISION:
         raise ValueError("budget subset belongs to another HF dataset revision")
-    if selection["splits"]["train"]["records"] != PER_TASK["train"] * len(TASKS):
+    if selection["selection"]["per_task"] != per_task:
+        raise ValueError("training subset selection differs from requested counts")
+    if selection["splits"]["train"]["records"] != per_task["train"] * len(TASKS):
         raise ValueError("budget training subset is incomplete")
     metadata = Path("/tmp/budget20_hf_manifest")
     snapshot_download(repo_id=REPO_ID, repo_type="dataset", revision=DATASET_REVISION,
@@ -245,9 +260,9 @@ def train_budget() -> dict:
             digest.update(block)
     if digest.hexdigest() != selection["image_archive_sha256"]:
         raise ValueError("budget photo archive checksum mismatch")
-    root = Path("/tmp/visual_jev_budget20")
+    root = Path(f"/tmp/visual_jev_{run_name}")
     root.mkdir(exist_ok=True)
-    for split in PER_TASK:
+    for split in per_task:
         shutil.copyfile(staged / f"{split}.jsonl", root / f"{split}.jsonl")
     shutil.copyfile(staged / "manifest.json", root / "manifest.json")
     with tarfile.open(archive_path, "r") as archive:
@@ -257,7 +272,7 @@ def train_budget() -> dict:
     env = os.environ.copy()
     env.update({
         "VISUAL_JEV_DATA_DIR": str(root),
-        "VISUAL_JEV_OUTPUT_DIR": "/volume/budget20/run",
+        "VISUAL_JEV_OUTPUT_DIR": f"{run_dir}/run",
         "VISUAL_JEV_DATASET_REPO": REPO_ID,
         "VISUAL_JEV_DATASET_REVISION": DATASET_REVISION,
         "VISUAL_JEV_ACCUMULATION": "16",
@@ -270,7 +285,7 @@ def train_budget() -> dict:
     finally:
         volume.commit()
     metrics = json.loads((staged / "run" / "metrics.json").read_text())
-    publication = publish_budget_model.spawn()
+    publication = publish_budget_model.spawn(run_name, model_repo)
     print(f"publication_function_call_id={publication.object_id}", flush=True)
     return metrics
 
@@ -279,27 +294,31 @@ def train_budget() -> dict:
 def train():
     import json
     # Spawn on the deployed app so the call survives this entrypoint's app shutdown.
-    call = modal.Function.from_name(APP_NAME, "train_budget").spawn()
+    call = modal.Function.from_name(APP_NAME, "train_budget").spawn(RUN_NAME, PER_TASK, MODEL_REPO_ID)
     print(json.dumps({"training_function_call_id": call.object_id}))
 
 
 @app.function(image=publish_image, cpu=2, memory=4096, timeout=1800,
               secrets=[modal.Secret.from_name("visual-jev-hf-publish")],
               volumes={"/volume": volume})
-def publish_budget_model() -> dict:
+def publish_budget_model(run_name: str = "budget20",
+                         model_repo: str = "harshnandwana/visual-jev-budget20-qwen35-0.8b-lora") -> dict:
     import json
     import os
     import subprocess
     import sys
 
     env = os.environ.copy()
-    env["VISUAL_JEV_BUDGET_SOURCE"] = "/volume/budget20/run"
-    env["VISUAL_JEV_BUDGET_MANIFEST"] = "/volume/budget20/manifest.json"
-    env["VISUAL_JEV_BUDGET_RELEASE"] = "/tmp/visual_jev_budget20_release"
-    env["VISUAL_JEV_MODEL_REPO"] = MODEL_REPO_ID
+    if not run_name.isidentifier():
+        raise ValueError("run_name must be an identifier")
+    run_dir = f"/volume/{run_name}"
+    env["VISUAL_JEV_BUDGET_SOURCE"] = f"{run_dir}/run"
+    env["VISUAL_JEV_BUDGET_MANIFEST"] = f"{run_dir}/manifest.json"
+    env["VISUAL_JEV_BUDGET_RELEASE"] = f"/tmp/visual_jev_{run_name}_release"
+    env["VISUAL_JEV_MODEL_REPO"] = model_repo
     subprocess.run([sys.executable, "/root/publish_budget_model.py"], env=env, check=True)
-    metrics = json.loads(Path("/volume/budget20/run/metrics.json").read_text())
-    return {"model_repo": MODEL_REPO_ID,
+    metrics = json.loads(Path(f"{run_dir}/run/metrics.json").read_text())
+    return {"model_repo": model_repo,
             "train_records": metrics["train_records_unique"],
             "validation_records": metrics["validation_records"],
             "test_records": metrics["test_records"]}
