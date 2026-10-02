@@ -55,6 +55,8 @@ The fixture is synthetic. To rebuild the full release from raw COCO and Visual G
 
 The [budget-limited LoRA model](https://huggingface.co/harshnandwana/visual-jev-budget20-qwen35-0.8b-lora) completed one epoch on **40,000 sampled training records** using two L4 GPUs. It was evaluated on all 1,000 records of the selected validation subset and all 1,000 records of the selected test subset. The [exact metrics](results/budget40k_metrics.json), [benchmark chart](results/budget40k_benchmark.png), and [training details](docs/BUDGET_TRAINING.md) are public. The earlier [256-example check](results/budget_smoke_metrics.json) remains for pipeline reproducibility. The complete 694,255-row training split has **not** been trained or benchmarked.
 
+The [test-case comparison](results/test_case_comparison.png) shows three real cases where the base model failed and the adapter passed, and three where both failed. Its [companion JSON](results/test_case_examples.json) retains the full predictions; `scripts/plots/plot_test_cases.py` regenerates the photo-free figure.
+
 ![Selected test benchmark for the 40,000-record model](results/budget40k_benchmark.png)
 
 ## Use your own dataset or account

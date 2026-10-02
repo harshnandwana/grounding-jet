@@ -1,0 +1,81 @@
+{
+  "model_repo": "harshnandwana/visual-jev-budget20-qwen35-0.8b-lora",
+  "dataset_repo": "harshnandwana/visual-jev-decisions-v1",
+  "dataset_revision": "687c745c34846d104ee85af802b9fd444a854f5d",
+  "test_records": 1000,
+  "classification": "IoU >= 0.5 for ground_bbox; score == 1 for other tasks",
+  "counts": {
+    "adapter_only": 663,
+    "base_only": 10,
+    "both_correct": 140,
+    "both_failed": 187
+  },
+  "examples": [
+    {
+      "category": "adapter_only",
+      "question": "Is the person to the left of the backpack?",
+      "id": "coco2017-val2017-76547-spatial-188853-1166503",
+      "task": "spatial_boolean",
+      "target": "NO",
+      "base_prediction": "YES",
+      "adapter_prediction": "NO",
+      "base_score": 0.0,
+      "adapter_score": 1.0
+    },
+    {
+      "category": "adapter_only",
+      "question": "Which box contains the person?",
+      "id": "coco2017-val2017-576566-ground-451097",
+      "task": "box_choice",
+      "target": "C",
+      "base_prediction": "The person is captured mid-air, suspended",
+      "adapter_prediction": "C",
+      "base_score": 0.0,
+      "adapter_score": 1.0
+    },
+    {
+      "category": "adapter_only",
+      "question": "Where is the tennis racket? Return its bounding box as normalized x1,y1,x2,y2 coordinates.",
+      "id": "coco2017-val2017-64718-locate-656133",
+      "task": "ground_bbox",
+      "target": "[0.102, 0.267, 0.224, 0.570]",
+      "base_prediction": "[140.5, 320.0, 200.0, 420.0]",
+      "adapter_prediction": "[0.100, 0.264, 0.200, 0.580]",
+      "base_score": 0.0,
+      "adapter_score": 0.767196998907465
+    },
+    {
+      "category": "both_failed",
+      "question": "Is the car to the left of the person?",
+      "id": "coco2017-val2017-30828-spatial-2042941-461443",
+      "task": "spatial_boolean",
+      "target": "YES",
+      "base_prediction": "NO",
+      "adapter_prediction": "NO",
+      "base_score": 0.0,
+      "adapter_score": 0.0
+    },
+    {
+      "category": "both_failed",
+      "question": "What color is the coat in the indicated box?",
+      "id": "vg-2356182-attribute-3563557-brown",
+      "task": "attribute_text",
+      "target": "brown",
+      "base_prediction": "black\n</think>\n\nblack",
+      "adapter_prediction": "black",
+      "base_score": 0.0,
+      "adapter_score": 0.0
+    },
+    {
+      "category": "both_failed",
+      "question": "How is the grass in box 1 related to the median in box 2?",
+      "id": "vg-2353066-relation-4235104",
+      "task": "relation_text",
+      "target": "inside",
+      "base_prediction": "The grass in Box 1 is adjacent to the median in Box 2.",
+      "adapter_prediction": "behind",
+      "base_score": 0.0,
+      "adapter_score": 0.0
+    }
+  ]
+}

@@ -41,6 +41,8 @@ One epoch on 40,000 sampled training records completed in 625 optimizer steps on
 
 These scores describe the selected held-out test subset. They do not establish performance on the full published test split or on new domains.
 
+For case-level inspection, see the [comparison graphic](../results/test_case_comparison.png) and [full example data](../results/test_case_examples.json). The figure uses the published prediction log and pinned test annotations, without distributing photos. Its grounding success threshold is IoU ≥ 0.50; the other tasks use the published exact-match score. This case classification is separate from the mean scores above.
+
 ## Verified training check
 
 The first two-L4 smoke run completed one optimizer step on 64 examples, then evaluated all 64 selected validation and 64 selected test examples. It is a pipeline check, not the 40,000-row model benchmark. The measured validation mean negative log-likelihood fell from 1.033 to 0.983 on box choice and from 1.674 to 1.619 on attribute text; other per-task values are in [`budget_smoke_microbatch4_metrics.json`](../results/budget_smoke_microbatch4_metrics.json). Peak GPU memory allocation was 12.66 GB and peak reservation was 16.70 GB on an L4 with 23.66 GB total. A later full-data batch exceeded the 24 GB L4 limit, so the production configuration uses microbatch 2 with gradient accumulation 16. The small test generation scores vary by task and must not be treated as final quality estimates.
