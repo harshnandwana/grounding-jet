@@ -20,7 +20,8 @@
       "base_prediction": "YES",
       "adapter_prediction": "NO",
       "base_score": 0.0,
-      "adapter_score": 1.0
+      "adapter_score": 1.0,
+      "image_source": "https://s3.amazonaws.com/images.cocodataset.org/val2017/000000076547.jpg"
     },
     {
       "category": "adapter_only",
@@ -31,7 +32,8 @@
       "base_prediction": "The person is captured mid-air, suspended",
       "adapter_prediction": "C",
       "base_score": 0.0,
-      "adapter_score": 1.0
+      "adapter_score": 1.0,
+      "image_source": "https://s3.amazonaws.com/images.cocodataset.org/val2017/000000576566.jpg"
     },
     {
       "category": "adapter_only",
@@ -42,7 +44,8 @@
       "base_prediction": "[140.5, 320.0, 200.0, 420.0]",
       "adapter_prediction": "[0.100, 0.264, 0.200, 0.580]",
       "base_score": 0.0,
-      "adapter_score": 0.767196998907465
+      "adapter_score": 0.767196998907465,
+      "image_source": "https://s3.amazonaws.com/images.cocodataset.org/val2017/000000064718.jpg"
     },
     {
       "category": "both_failed",
@@ -53,7 +56,8 @@
       "base_prediction": "NO",
       "adapter_prediction": "NO",
       "base_score": 0.0,
-      "adapter_score": 0.0
+      "adapter_score": 0.0,
+      "image_source": "https://s3.amazonaws.com/images.cocodataset.org/val2017/000000030828.jpg"
     },
     {
       "category": "both_failed",
@@ -64,7 +68,8 @@
       "base_prediction": "black\n</think>\n\nblack",
       "adapter_prediction": "black",
       "base_score": 0.0,
-      "adapter_score": 0.0
+      "adapter_score": 0.0,
+      "image_source": "https://s3.amazonaws.com/images.cocodataset.org/val2017/000000435208.jpg"
     },
     {
       "category": "both_failed",
@@ -75,7 +80,8 @@
       "base_prediction": "The grass in Box 1 is adjacent to the median in Box 2.",
       "adapter_prediction": "behind",
       "base_score": 0.0,
-      "adapter_score": 0.0
+      "adapter_score": 0.0,
+      "image_source": "https://s3.amazonaws.com/images.cocodataset.org/val2017/000000343315.jpg"
     }
   ]
 }

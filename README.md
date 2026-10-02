@@ -1,6 +1,6 @@
 # Visual Jev
 
-Tools for building an image-grounded decision dataset and training Qwen3.5 LoRA adapters. The [published annotation dataset](https://huggingface.co/datasets/harshnandwana/visual-jev-decisions-v1) has 694,255 train, 24,137 validation, and 6,254 test records across five tasks. The dataset and this repository contain **no photo files**. Image references point to COCO 2017; users fetch the photos from the upstream source when needed.
+Tools for building an image-grounded decision dataset and training Qwen3.5 LoRA adapters. The [published annotation dataset](https://huggingface.co/datasets/harshnandwana/visual-jev-decisions-v1) has 694,255 train, 24,137 validation, and 6,254 test records across five tasks. The dataset and model repositories contain **no photo files**. This GitHub README includes one composite figure with COCO photo thumbnails. Image references point to COCO 2017; users fetch the source photos when needed.
 
 ## Repository layout
 
@@ -11,7 +11,7 @@ scripts/modal/        Modal staging, pilot and budget training, workers, and mod
 scripts/plots/        Local benchmark and pilot plots
 tests/                Synthetic fixture and offline tests
 docs/                 Data, training, budget, and contribution guides
-results/              Measured, photo-free training check outputs
+results/              Measured outputs and a photo-based test comparison figure
 data/                 Local datasets and photos; only small pilot files and the manifest are tracked
 ```
 
@@ -38,7 +38,7 @@ The annotation rows use image paths such as `data/coco/train2017/000000000009.jp
 .venv/bin/visual-jev-data validate data/hf_release/train.jsonl --check-images
 ```
 
-The image download is optional for inspecting annotations, but required for local visual training. It downloads from the official COCO image host. Photos stay in the ignored `data/coco/` directory; do not add them to Hugging Face or GitHub. The Modal training scripts stage photos in a private Modal Volume instead.
+The image download is optional for inspecting annotations, but required for local visual training. It downloads from the official COCO image host. Source photos stay in the ignored `data/coco/` directory; do not add those files to Hugging Face or GitHub. The Modal training scripts stage photos in a private Modal Volume instead.
 
 ## Run the code
 
@@ -55,7 +55,9 @@ The fixture is synthetic. To rebuild the full release from raw COCO and Visual G
 
 The [budget-limited LoRA model](https://huggingface.co/harshnandwana/visual-jev-budget20-qwen35-0.8b-lora) completed one epoch on **40,000 sampled training records** using two L4 GPUs. It was evaluated on all 1,000 records of the selected validation subset and all 1,000 records of the selected test subset. The [exact metrics](results/budget40k_metrics.json), [benchmark chart](results/budget40k_benchmark.png), and [training details](docs/BUDGET_TRAINING.md) are public. The earlier [256-example check](results/budget_smoke_metrics.json) remains for pipeline reproducibility. The complete 694,255-row training split has **not** been trained or benchmarked.
 
-The [test-case comparison](results/test_case_comparison.png) shows three real cases where the base model failed and the adapter passed, and three where both failed. Its [companion JSON](results/test_case_examples.json) retains the full predictions; `scripts/plots/plot_test_cases.py` regenerates the photo-free figure.
+The figure below shows three real cases where the base model failed and the adapter passed, and three where both failed. It includes annotated COCO photo thumbnails in this GitHub repository only. The [companion JSON](results/test_case_examples.json) retains the full predictions; `scripts/plots/plot_test_cases.py` regenerates the figure from local COCO photos and the published test records.
+
+![Held-out comparison with annotated COCO photos](results/test_case_comparison.png)
 
 ![Selected test benchmark for the 40,000-record model](results/budget40k_benchmark.png)
 

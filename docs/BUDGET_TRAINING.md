@@ -29,7 +29,7 @@ The `train` entrypoint calls the deployed app. Its returned function-call ID ide
 
 ## Completed sampled run
 
-One epoch on 40,000 sampled training records completed in 625 optimizer steps on two L4 GPUs. Baseline and adapter validation covered all 1,000 selected validation records; greedy generation for both covered all 1,000 selected test records, 200 per task. The adapter and model card are on [Hugging Face](https://huggingface.co/harshnandwana/visual-jev-budget20-qwen35-0.8b-lora). The [metrics JSON](../results/budget40k_metrics.json) and [chart](../results/budget40k_benchmark.png) are also in this repository. No photo bytes are in either public repository.
+One epoch on 40,000 sampled training records completed in 625 optimizer steps on two L4 GPUs. Baseline and adapter validation covered all 1,000 selected validation records; greedy generation for both covered all 1,000 selected test records, 200 per task. The adapter and model card are on [Hugging Face](https://huggingface.co/harshnandwana/visual-jev-budget20-qwen35-0.8b-lora). The [metrics JSON](../results/budget40k_metrics.json) and [chart](../results/budget40k_benchmark.png) are also in this repository. The Hugging Face dataset and model repositories contain no photo bytes; this GitHub repository includes a composite example figure with COCO photo thumbnails.
 
 | Task | Base test score | Adapter test score | Metric |
 | --- | ---: | ---: | --- |
@@ -41,7 +41,7 @@ One epoch on 40,000 sampled training records completed in 625 optimizer steps on
 
 These scores describe the selected held-out test subset. They do not establish performance on the full published test split or on new domains.
 
-For case-level inspection, see the [comparison graphic](../results/test_case_comparison.png) and [full example data](../results/test_case_examples.json). The figure uses the published prediction log and pinned test annotations, without distributing photos. Its grounding success threshold is IoU ≥ 0.50; the other tasks use the published exact-match score. This case classification is separate from the mean scores above.
+For case-level inspection, see the [comparison graphic](../results/test_case_comparison.png) and [full example data](../results/test_case_examples.json). The figure uses the published prediction log, pinned test annotations, and locally fetched COCO photos. Its grounding success threshold is IoU ≥ 0.50; the other tasks use the published exact-match score. This case classification is separate from the mean scores above. The photos appear only in the GitHub composite, not on Hugging Face.
 
 ## Verified training check
 
