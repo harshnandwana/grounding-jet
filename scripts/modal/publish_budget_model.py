@@ -9,7 +9,7 @@ import shutil
 
 
 ROOT = Path(__file__).resolve().parent
-PROJECT_ROOT = ROOT.parents[1] if (ROOT.parents[1] / "pyproject.toml").is_file() else ROOT
+PROJECT_ROOT = ROOT.parent.parent if (ROOT.parent.parent / "pyproject.toml").is_file() else ROOT
 SOURCE = Path(os.environ.get("VISUAL_JEV_BUDGET_SOURCE", PROJECT_ROOT / "data" / "budget20" / "run"))
 MANIFEST = Path(os.environ.get("VISUAL_JEV_BUDGET_MANIFEST", PROJECT_ROOT / "data" / "budget20" / "manifest.json"))
 DEST = Path(os.environ.get("VISUAL_JEV_BUDGET_RELEASE", PROJECT_ROOT / "data" / "budget20" / "release"))

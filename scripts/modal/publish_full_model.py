@@ -9,7 +9,7 @@ import shutil
 
 
 ROOT = Path(__file__).resolve().parent
-PROJECT_ROOT = ROOT.parents[1] if (ROOT.parents[1] / "pyproject.toml").is_file() else ROOT
+PROJECT_ROOT = ROOT.parent.parent if (ROOT.parent.parent / "pyproject.toml").is_file() else ROOT
 SOURCE = Path(os.environ.get("VISUAL_JEV_FULL_SOURCE", PROJECT_ROOT / "data" / "model_full" / "visual-jev-full-h100-lora"))
 DEST = Path(os.environ.get("VISUAL_JEV_FULL_RELEASE", PROJECT_ROOT / "data" / "hf_full_model_release"))
 REPO = os.environ.get("VISUAL_JEV_MODEL_REPO", "harshnandwana/visual-jev-full-qwen35-0.8b-lora")

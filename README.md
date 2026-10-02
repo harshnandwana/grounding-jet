@@ -53,7 +53,9 @@ The image download is optional for inspecting annotations, but required for loca
 
 The fixture is synthetic. To rebuild the full release from raw COCO and Visual Genome annotations, see [the data guide](docs/DATA.md). To run the sampled model pipeline on Modal, see [budget training](docs/BUDGET_TRAINING.md). The [training guide](docs/TRAINING.md) explains the complete dataset pipeline, which requires substantially more compute.
 
-The [measured 256-example two-L4 check](results/budget_smoke_metrics.json) completed four optimizer steps and a 256-row validation and test pass. Its results verify the pipeline, not model quality. A 40,000-example budget run has been started separately; the full-dataset model has not been benchmarked or released. Report results only from completed artifacts.
+The [budget-limited LoRA model](https://huggingface.co/harshnandwana/visual-jev-budget20-qwen35-0.8b-lora) completed one epoch on **40,000 sampled training records** using two L4 GPUs. It was evaluated on all 1,000 records of the selected validation subset and all 1,000 records of the selected test subset. The [exact metrics](results/budget40k_metrics.json), [benchmark chart](results/budget40k_benchmark.png), and [training details](docs/BUDGET_TRAINING.md) are public. The earlier [256-example check](results/budget_smoke_metrics.json) remains for pipeline reproducibility. The complete 694,255-row training split has **not** been trained or benchmarked.
+
+![Selected test benchmark for the 40,000-record model](results/budget40k_benchmark.png)
 
 ## Use your own dataset or account
 

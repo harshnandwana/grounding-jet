@@ -1,6 +1,6 @@
 # Budget-limited model release
 
-The complete annotation dataset remains available at [Visual Jev decisions v1](https://huggingface.co/datasets/harshnandwana/visual-jev-decisions-v1). The full 694,255-row training epoch and full 24,137-row validation / 6,254-row test benchmark do not fit the roughly $20 Modal credit budget with the current per-image worker. This run produces an honestly labeled sampled model instead.
+The complete annotation dataset remains available at [Visual Jev decisions v1](https://huggingface.co/datasets/harshnandwana/visual-jev-decisions-v1). The full 694,255-row training epoch and full 24,137-row validation / 6,254-row test benchmark do not fit the roughly $20 Modal credit budget with the current per-image worker. This run produced an honestly labeled [sampled model](https://huggingface.co/harshnandwana/visual-jev-budget20-qwen35-0.8b-lora) instead.
 
 ## Fixed scope and ceiling
 
@@ -26,6 +26,20 @@ modal run scripts/modal/budget_modal.py::train
 The Modal app is `visual-jev-budget20`; staged metadata and the selected image archive are under `/budget20` in Volume `visual-jev-full-v1`. The publisher uses the Modal secret `visual-jev-hf-publish` for `HF_TOKEN` and targets [the budget model repository](https://huggingface.co/harshnandwana/visual-jev-budget20-qwen35-0.8b-lora). Check the model card's exact split sizes and per-task metrics after upload. The complete-dataset model is a separate future run that would require a larger compute budget.
 
 The `train` entrypoint calls the deployed app. Its returned function-call ID identifies the persistent GPU run; the local command can exit while training continues.
+
+## Completed sampled run
+
+One epoch on 40,000 sampled training records completed in 625 optimizer steps on two L4 GPUs. Baseline and adapter validation covered all 1,000 selected validation records; greedy generation for both covered all 1,000 selected test records, 200 per task. The adapter and model card are on [Hugging Face](https://huggingface.co/harshnandwana/visual-jev-budget20-qwen35-0.8b-lora). The [metrics JSON](../results/budget40k_metrics.json) and [chart](../results/budget40k_benchmark.png) are also in this repository. No photo bytes are in either public repository.
+
+| Task | Base test score | Adapter test score | Metric |
+| --- | ---: | ---: | --- |
+| Ground box | 0.044 | 0.530 | Mean IoU |
+| Box choice | 0.000 | 0.940 | Exact match |
+| Spatial Boolean | 0.710 | 0.900 | Exact match |
+| Attribute text | 0.005 | 0.785 | Exact match |
+| Relation text | 0.000 | 0.800 | Exact match |
+
+These scores describe the selected held-out test subset. They do not establish performance on the full published test split or on new domains.
 
 ## Verified training check
 
