@@ -11,7 +11,7 @@ import argparse
 from pathlib import Path
 
 
-DEFAULT_MODEL = "harshnandwana/visual-jev-budget20-qwen35-0.8b-lora"
+DEFAULT_MODEL = "harshnandwana/visual-jev-120k-qwen35-0.8b-lora"
 BASE_MODEL = "Qwen/Qwen3.5-0.8B-Base"
 TASKS = ("ground_bbox", "box_choice", "spatial_boolean", "attribute_text", "relation_text")
 

@@ -53,7 +53,17 @@ The image download is optional for inspecting annotations, but required for loca
 
 The fixture is synthetic. To rebuild the full release from raw COCO and Visual Genome annotations, see [the data guide](docs/DATA.md). To run the sampled model pipeline on Modal, see [budget training](docs/BUDGET_TRAINING.md). The [training guide](docs/TRAINING.md) explains the complete dataset pipeline, which requires substantially more compute.
 
-The [budget-limited LoRA model](https://huggingface.co/harshnandwana/visual-jev-budget20-qwen35-0.8b-lora) completed one epoch on **40,000 sampled training records** using two L4 GPUs. It was evaluated on all 1,000 records of the selected validation subset and all 1,000 records of the selected test subset. The [exact metrics](results/budget40k_metrics.json), [benchmark chart](results/budget40k_benchmark.png), and [training details](docs/BUDGET_TRAINING.md) are public. The earlier [256-example check](results/budget_smoke_metrics.json) remains for pipeline reproducibility. The complete 694,255-row training split has **not** been trained or benchmarked.
+The latest [120k LoRA model](https://huggingface.co/harshnandwana/visual-jev-120k-qwen35-0.8b-lora) completed one epoch on **120,000 sampled training records** using two L4 GPUs. The earlier [40k model](https://huggingface.co/harshnandwana/visual-jev-budget20-qwen35-0.8b-lora) used 40,000 training rows. Both were evaluated on the **same** 1,000 selected validation and 1,000 selected test records; their published prediction logs contain the same 1,000 test IDs. The [120k metrics](results/budget120k_metrics.json), [benchmark chart](results/budget120k_benchmark.png), [40k metrics](results/budget40k_metrics.json), and [training details](docs/BUDGET_TRAINING.md) are public. The complete 694,255-row training split has **not** been trained or benchmarked.
+
+| Selected test task | 40k adapter | 120k adapter | Metric |
+| --- | ---: | ---: | --- |
+| Ground box | 0.530 | 0.598 | Mean IoU |
+| Box choice | 94.0% | 97.5% | Exact match |
+| Spatial Boolean | 90.0% | 94.5% | Exact match |
+| Attribute text | 78.5% | 81.5% | Exact match |
+| Relation text | 80.0% | 80.5% | Exact match |
+
+These are measured on a selected held-out subset, not the complete published test split or new domains.
 
 Run the released adapter on your own local photo:
 
@@ -63,7 +73,7 @@ python3 scripts/infer.py --image example.jpg --task spatial_boolean \
   --question "Is the person to the left of the backpack?"
 ```
 
-The model card has a full Python example. Hugging Face currently lists no Inference Provider for this adapter, so its page has no live browser widget. The CLI accepts all five tasks; use `python3 scripts/infer.py --help` for box arguments. Your photo stays local when you run the CLI.
+The CLI defaults to the 120k adapter and accepts all five tasks; use `python3 scripts/infer.py --help` for box arguments or `--model harshnandwana/visual-jev-budget20-qwen35-0.8b-lora` to use the 40k adapter. The model cards have full Python examples. Hugging Face currently lists no Inference Provider for these adapters, so their pages have no live browser widget. Your photo stays local when you run the CLI.
 
 For a guided run, [open the Colab notebook](https://colab.research.google.com/github/harshnandwana/grounding-jet/blob/main/notebooks/try_visual_jev.ipynb) and upload your own image to your Google runtime. The Hugging Face “Use this model” PEFT snippet currently loads the text-only Qwen class, so use the model card code, CLI, or notebook for image questions.
 
@@ -82,6 +92,8 @@ The figure below shows three real cases where the base model failed and the adap
 ![Held-out comparison with annotated COCO photos](results/test_case_comparison.png)
 
 ![Selected test benchmark for the 40,000-record model](results/budget40k_benchmark.png)
+
+![Selected test benchmark for the 120,000-record model](results/budget120k_benchmark.png)
 
 ## Use your own dataset or account
 

@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw
 
 
 BASE_MODEL = "Qwen/Qwen3.5-0.8B-Base"
-ADAPTER = os.getenv("VISUAL_JEV_ADAPTER", "harshnandwana/visual-jev-budget20-qwen35-0.8b-lora")
+ADAPTER = os.getenv("VISUAL_JEV_ADAPTER", "harshnandwana/visual-jev-120k-qwen35-0.8b-lora")
 TASKS = ("spatial_boolean", "ground_bbox", "box_choice", "attribute_text", "relation_text")
 
 

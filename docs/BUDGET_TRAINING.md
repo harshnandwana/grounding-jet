@@ -41,6 +41,20 @@ One epoch on 40,000 sampled training records completed in 625 optimizer steps on
 
 These scores describe the selected held-out test subset. They do not establish performance on the full published test split or on new domains.
 
+## Completed 120k follow-up
+
+The [120k adapter](https://huggingface.co/harshnandwana/visual-jev-120k-qwen35-0.8b-lora) completed one epoch on 24,000 sampled training rows per task, totaling 120,000 rows and 1,875 optimizer steps on two L4 GPUs. It evaluated all 1,000 selected validation rows and generated predictions for all 1,000 selected test rows. The 40k and 120k prediction logs have identical sets of 1,000 test IDs. Its [metrics JSON](../results/budget120k_metrics.json) and [benchmark chart](../results/budget120k_benchmark.png) are saved in this repository.
+
+| Task | 40k adapter | 120k adapter | Difference | Metric |
+| --- | ---: | ---: | ---: | --- |
+| Ground box | 0.530 | 0.598 | +0.068 | Mean IoU |
+| Box choice | 0.940 | 0.975 | +0.035 | Exact match |
+| Spatial Boolean | 0.900 | 0.945 | +0.045 | Exact match |
+| Attribute text | 0.785 | 0.815 | +0.030 | Exact match |
+| Relation text | 0.800 | 0.805 | +0.005 | Exact match |
+
+Each task has 200 selected test rows. The base model scores are unchanged because the same test IDs were used. The 120k run took 12,981.8 seconds (3.61 hours) from GPU function start through benchmark and used peak allocated GPU memory of 7.27 GB per rank; peak reserved memory was 14.62 GB on a 23.66 GB L4. Better scores on this subset do not establish improvement on the full published test split or unseen image domains. The released adapter and model card contain no photo bytes.
+
 For case-level inspection, see the [comparison graphic](../results/test_case_comparison.png) and [full example data](../results/test_case_examples.json). The figure uses the published prediction log, pinned test annotations, and locally fetched COCO photos. Its grounding success threshold is IoU ≥ 0.50; the other tasks use the published exact-match score. This case classification is separate from the mean scores above. The photos appear only in the GitHub composite, not on Hugging Face.
 
 ## Verified training check

@@ -1,0 +1,105 @@
+{
+  "base_model": "Qwen/Qwen3.5-0.8B-Base",
+  "dataset_repo": "harshnandwana/visual-jev-decisions-v1",
+  "dataset_revision": "687c745c34846d104ee85af802b9fd444a854f5d",
+  "dataset_selection": {
+    "method": "per-task reservoir sampling",
+    "seed": 43801,
+    "per_task": {
+      "train": 24000,
+      "validation": 200,
+      "test": 200
+    },
+    "photo_files_on_hf": false
+  },
+  "gpu": "NVIDIA L4",
+  "gpu_count": 2,
+  "train_records_unique": 120000,
+  "train_records_processed_including_padding": 120000,
+  "validation_records": 1000,
+  "test_records": 1000,
+  "epochs": 1,
+  "optimizer_steps": 1875,
+  "gradient_accumulation_per_gpu": 16,
+  "microbatch_per_gpu": 2,
+  "effective_global_batch_size": 64,
+  "learning_rate": 5e-05,
+  "lora_rank": 16,
+  "mean_train_nll": 0.32078917416219943,
+  "baseline_full_validation_nll": {
+    "ground_bbox": {
+      "n": 200,
+      "mean_nll": 0.9207034356892109
+    },
+    "box_choice": {
+      "n": 200,
+      "mean_nll": 1.0274724426865578
+    },
+    "spatial_boolean": {
+      "n": 200,
+      "mean_nll": 0.43039386443793776
+    },
+    "attribute_text": {
+      "n": 200,
+      "mean_nll": 1.5594020611047745
+    },
+    "relation_text": {
+      "n": 200,
+      "mean_nll": 4.203603103756905
+    }
+  },
+  "adapter_full_validation_nll": {
+    "ground_bbox": {
+      "n": 200,
+      "mean_nll": 0.5865744959563017
+    },
+    "box_choice": {
+      "n": 200,
+      "mean_nll": 0.035153772487410605
+    },
+    "spatial_boolean": {
+      "n": 200,
+      "mean_nll": 0.06496351434019744
+    },
+    "attribute_text": {
+      "n": 200,
+      "mean_nll": 0.22322554380632936
+    },
+    "relation_text": {
+      "n": 200,
+      "mean_nll": 0.1571458867099136
+    }
+  },
+  "full_test_generation_scores": {
+    "ground_bbox": {
+      "n": 200,
+      "base_mean": 0.04433173314524511,
+      "adapter_mean": 0.5976300663694739
+    },
+    "box_choice": {
+      "n": 200,
+      "base_mean": 0.0,
+      "adapter_mean": 0.975
+    },
+    "spatial_boolean": {
+      "n": 200,
+      "base_mean": 0.71,
+      "adapter_mean": 0.945
+    },
+    "attribute_text": {
+      "n": 200,
+      "base_mean": 0.005,
+      "adapter_mean": 0.815
+    },
+    "relation_text": {
+      "n": 200,
+      "base_mean": 0.0,
+      "adapter_mean": 0.805
+    }
+  },
+  "score_definition": "ground_bbox: mean IoU; all other tasks: greedy-generation exact match",
+  "elapsed_seconds": 12981.79237651825,
+  "peak_cuda_memory_gb": 7.272689152,
+  "peak_cuda_reserved_gb": 14.623440896,
+  "gpu_total_memory_gb": 23.65915136
+}
