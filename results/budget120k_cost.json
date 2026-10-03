@@ -1,0 +1,20 @@
+{
+  "scope": "Modal apps named visual-jev-budget120k; staging, training, automatic benchmark and publication",
+  "billing_report_range_local": "2026-10-02 to 2026-10-04 Asia/Kolkata, hourly resource detail",
+  "captured_at_utc": "2026-10-03T02:35:57+00:00",
+  "currency": "USD",
+  "metered_cost": "8.23251352",
+  "resource_costs": {
+    "CPU": "1.41446755",
+    "L4": "5.86998068",
+    "Memory": "0.94806529"
+  },
+  "app_costs": {
+    "ap-5xHl4t6XoxpjrMmmiK9FJp": "8.20143701",
+    "ap-JDFYw3DfLcKorJZWsrzD7p": "0.00014071",
+    "ap-QygthqzVV7u3hFGBAguY3b": "0.03093580"
+  },
+  "workspace_month_billed_cost_after_credits": "0E-8",
+  "net_out_of_pocket_for_this_run_to_date": "0.00",
+  "notes": "Workspace monthly billing currently shows $0 billed because credits cover usage. Per-run credit allocation is inferred, not separately reported by Modal. Shared volume storage and later model-card listing repairs are excluded."
+}

@@ -65,6 +65,10 @@ The latest [120k LoRA model](https://huggingface.co/harshnandwana/visual-jev-120
 
 These are measured on a selected held-out subset, not the complete published test split or new domains.
 
+![40k versus 120k held-out test comparison, with measured Modal cost](results/40k_vs_120k_test.png)
+
+The 120k experiment's Modal billing report totals **$8.23 metered** for the staging, training, evaluation, and automatic publication apps: $5.87 L4, $1.41 CPU, and $0.95 memory. Workspace credits covered the charge, so the **net amount billed to date is $0.00**. Shared volume storage and later model-card edits are excluded; see the [cost audit](results/budget120k_cost.json).
+
 Run the released adapter on your own local photo:
 
 ```bash
@@ -90,10 +94,6 @@ The Space is **not yet live**. Hugging Face rejected creation on the current acc
 The figure below shows three real cases where the base model failed and the adapter passed, and three where both failed. It includes annotated COCO photo thumbnails in this GitHub repository only. The [companion JSON](results/test_case_examples.json) retains the full predictions; `scripts/plots/plot_test_cases.py` regenerates the figure from local COCO photos and the published test records.
 
 ![Held-out comparison with annotated COCO photos](results/test_case_comparison.png)
-
-![Selected test benchmark for the 40,000-record model](results/budget40k_benchmark.png)
-
-![Selected test benchmark for the 120,000-record model](results/budget120k_benchmark.png)
 
 ## Use your own dataset or account
 

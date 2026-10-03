@@ -89,6 +89,17 @@ def plot(metrics: dict) -> None:
 def card(metrics: dict, manifest: dict, repo_id: str = REPO) -> str:
     score_rows = []
     loss_rows = []
+    comparison = ""
+    if metrics["train_records_unique"] == 120_000 and repo_id == "harshnandwana/visual-jev-120k-qwen35-0.8b-lora":
+        comparison = """
+## Compared with the 40k adapter
+
+The two published prediction logs contain the same 1,000 held-out test IDs. The 120k adapter improved all five selected-subset scores, including mean grounding IoU from 0.530 to 0.598, box choice accuracy from 94.0% to 97.5%, and spatial decision accuracy from 90.0% to 94.5%. This is not a full test-split benchmark.
+
+![40k versus 120k held-out test comparison](comparison_test.png)
+
+Modal's billing report measured **$8.23 metered** for the 120k staging, training, benchmark, and automatic publication apps. Workspace credits covered the charge, leaving **$0.00 billed to date**. Shared volume storage and later model-card repairs are excluded. See [`cost.json`](cost.json) for the exact resource and app breakdown.
+"""
     for task in TASKS:
         score = metrics["full_test_generation_scores"][task]
         base = metrics["baseline_full_validation_nll"][task]
@@ -115,6 +126,7 @@ tags:
 This PEFT adapter was trained on a **{metrics['train_records_unique']:,}-row stratified subset**, not the entire training split, of [Visual Jev decisions v1](https://huggingface.co/datasets/{manifest['dataset_repo']}) at revision `{manifest['dataset_revision']}`. It answers a task-specific question about an image with a normalized box, choice, or short text.
 
 ![Held-out subset benchmark](benchmark.png)
+{comparison}
 
 ## Dataset and training
 

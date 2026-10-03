@@ -55,6 +55,8 @@ The [120k adapter](https://huggingface.co/harshnandwana/visual-jev-120k-qwen35-0
 
 Each task has 200 selected test rows. The base model scores are unchanged because the same test IDs were used. The 120k run took 12,981.8 seconds (3.61 hours) from GPU function start through benchmark and used peak allocated GPU memory of 7.27 GB per rank; peak reserved memory was 14.62 GB on a 23.66 GB L4. Better scores on this subset do not establish improvement on the full published test split or unseen image domains. The released adapter and model card contain no photo bytes.
 
+The [photo-free comparison image](../results/40k_vs_120k_test.png) shows both adapters on the same selected test records. The [Modal cost audit](../results/budget120k_cost.json) sums billing-report rows for apps named `visual-jev-budget120k`: **$8.23251352 metered** ($5.86998068 L4, $1.41446755 CPU, $0.94806529 memory). Monthly workspace billing showed $0 billed after credits at the audit time, so this experiment had **$0.00 net out-of-pocket cost to date**. Shared volume storage and subsequent listing repairs are excluded from the app-specific total. This is a measured app charge, not an estimate from GPU hours.
+
 For case-level inspection, see the [comparison graphic](../results/test_case_comparison.png) and [full example data](../results/test_case_examples.json). The figure uses the published prediction log, pinned test annotations, and locally fetched COCO photos. Its grounding success threshold is IoU ≥ 0.50; the other tasks use the published exact-match score. This case classification is separate from the mean scores above. The photos appear only in the GitHub composite, not on Hugging Face.
 
 ## Verified training check
