@@ -1,0 +1,87 @@
+{
+  "model_repo": "harshnandwana/visual-jev-120k-qwen35-0.8b-lora",
+  "dataset_repo": "harshnandwana/visual-jev-decisions-v1",
+  "dataset_revision": "687c745c34846d104ee85af802b9fd444a854f5d",
+  "test_records": 1000,
+  "classification": "IoU >= 0.5 for ground_bbox; score == 1 for other tasks",
+  "counts": {
+    "adapter_only": 699,
+    "base_only": 6,
+    "both_correct": 144,
+    "both_failed": 151
+  },
+  "examples": [
+    {
+      "category": "adapter_only",
+      "question": "Where is the tennis racket? Return its bounding box as normalized x1,y1,x2,y2 coordinates.",
+      "id": "coco2017-val2017-64718-locate-656133",
+      "task": "ground_bbox",
+      "target": "[0.102, 0.267, 0.224, 0.570]",
+      "base_prediction": "[140.5, 320.0, 200.0, 420.0]",
+      "adapter_prediction": "[0.100, 0.264, 0.200, 0.580]",
+      "base_score": 0.0,
+      "adapter_score": 0.767196998907465,
+      "image_source": "https://s3.amazonaws.com/images.cocodataset.org/val2017/000000064718.jpg"
+    },
+    {
+      "category": "adapter_only",
+      "question": "Which box contains the person?",
+      "id": "coco2017-val2017-576566-ground-451097",
+      "task": "box_choice",
+      "target": "C",
+      "base_prediction": "The person is captured mid-air, suspended",
+      "adapter_prediction": "C",
+      "base_score": 0.0,
+      "adapter_score": 1.0,
+      "image_source": "https://s3.amazonaws.com/images.cocodataset.org/val2017/000000576566.jpg"
+    },
+    {
+      "category": "adapter_only",
+      "question": "Is the person to the left of the backpack?",
+      "id": "coco2017-val2017-76547-spatial-188853-1166503",
+      "task": "spatial_boolean",
+      "target": "NO",
+      "base_prediction": "YES",
+      "adapter_prediction": "NO",
+      "base_score": 0.0,
+      "adapter_score": 1.0,
+      "image_source": "https://s3.amazonaws.com/images.cocodataset.org/val2017/000000076547.jpg"
+    },
+    {
+      "category": "base_only",
+      "question": "Is the baseball glove to the left of the baseball bat?",
+      "id": "coco2017-val2017-486104-spatial-634685-1476487",
+      "task": "spatial_boolean",
+      "target": "YES",
+      "base_prediction": "YES",
+      "adapter_prediction": "NO",
+      "base_score": 1.0,
+      "adapter_score": 0.0,
+      "image_source": "https://s3.amazonaws.com/images.cocodataset.org/val2017/000000486104.jpg"
+    },
+    {
+      "category": "both_failed",
+      "question": "What color is the coat in the indicated box?",
+      "id": "vg-2356182-attribute-3563557-brown",
+      "task": "attribute_text",
+      "target": "brown",
+      "base_prediction": "black\n</think>\n\nblack",
+      "adapter_prediction": "black",
+      "base_score": 0.0,
+      "adapter_score": 0.0,
+      "image_source": "https://s3.amazonaws.com/images.cocodataset.org/val2017/000000435208.jpg"
+    },
+    {
+      "category": "both_failed",
+      "question": "How is the pizza in box 1 related to the pan in box 2?",
+      "id": "vg-2413340-relation-168883",
+      "task": "relation_text",
+      "target": "on",
+      "base_prediction": "The pizza in box 1 is on top of the pan in box 2",
+      "adapter_prediction": "inside",
+      "base_score": 0.0,
+      "adapter_score": 0.0,
+      "image_source": "https://s3.amazonaws.com/images.cocodataset.org/val2017/000000246436.jpg"
+    }
+  ]
+}

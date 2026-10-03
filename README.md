@@ -91,9 +91,23 @@ modal run scripts/modal/publish_space.py
 
 The Space is **not yet live**. Hugging Face rejected creation on the current account with HTTP 402: CPU Basic Gradio Spaces require PRO. ZeroGPU creation was also rejected because this account is not yet eligible. After the account becomes eligible or has PRO, run the publisher above. It requests CPU Basic by default, which has no hourly hardware charge but can be slow for inference. Change the hardware deliberately if a faster paid setup is desired.
 
-The figure below shows three real cases where the base model failed and the adapter passed, and three where both failed. It includes annotated COCO photo thumbnails in this GitHub repository only. The [companion JSON](results/test_case_examples.json) retains the full predictions; `scripts/plots/plot_test_cases.py` regenerates the figure from local COCO photos and the published test records.
+## What the adapter learned, and where it struggles
+
+The 120k comparison below uses six real cases from the same selected 1,000-row held-out test set as the 40k run. The adapter recovers a grounding box, a box choice, and a spatial decision that the base model missed. On the right, it misses a small-object spatial decision, disagrees with a Visual Genome color label, and gives a different relation word. The relation example also shows a limit of exact-match scoring: the base model's longer “on top of” answer is semantically close to the target `on` but scores zero. These are selected examples, not a random sample. The [companion JSON](results/120k_test_cases.json) has full predictions and source photo links; `scripts/plots/plot_120k_cases.py` regenerates the figure.
+
+![120k adapter successes and scored misses with annotated held-out COCO photos](results/120k_test_cases.png)
+
+The earlier 40k comparison also includes annotated test photos and [its full selected predictions](results/test_case_examples.json):
 
 ![Held-out comparison with annotated COCO photos](results/test_case_comparison.png)
+
+## How the dataset was created
+
+Published questions largely follow five fixed templates. The objects, answer boxes, offered choices, colors, and relations vary according to COCO and Visual Genome annotations; each photo contributes whichever supported tasks its annotations allow. The more varied 6,823 Luna-generated candidates remain outside the published training and evaluation splits pending human review. This limits claims about unfamiliar phrasings, absence, counting, and false premises. See [the data guide](docs/DATA.md) for filtering, split policy, licenses, and rebuild commands.
+
+This single held-out photo yields **61 records** across all five tasks. The annotated figure shows one published question and target per task, with the actual source photo. These are dataset rows, not fresh model predictions. Its [companion JSON](results/one_image_dataset.json) identifies the exact rows and source photo.
+
+![One COCO photo yielding five kinds of published test questions](results/one_image_dataset.png)
 
 ## Use your own dataset or account
 

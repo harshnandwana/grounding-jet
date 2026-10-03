@@ -90,6 +90,7 @@ def card(metrics: dict, manifest: dict, repo_id: str = REPO) -> str:
     score_rows = []
     loss_rows = []
     comparison = ""
+    visual_section = ""
     if metrics["train_records_unique"] == 120_000 and repo_id == "harshnandwana/visual-jev-120k-qwen35-0.8b-lora":
         comparison = """
 ## Compared with the 40k adapter
@@ -99,6 +100,21 @@ The two published prediction logs contain the same 1,000 held-out test IDs. The 
 ![40k versus 120k held-out test comparison](comparison_test.png)
 
 Modal's billing report measured **$8.23 metered** for the 120k staging, training, benchmark, and automatic publication apps. Workspace credits covered the charge, leaving **$0.00 billed to date**. Shared volume storage and later model-card repairs are excluded. See [`cost.json`](cost.json) for the exact resource and app breakdown.
+"""
+        visual_section = """
+## Photo-based held-out cases
+
+The [GitHub composite](https://github.com/harshnandwana/grounding-jet/blob/main/results/120k_test_cases.png) shows three examples recovered by this adapter and three scored misses, with annotated source photos. Its [companion JSON](https://github.com/harshnandwana/grounding-jet/blob/main/results/120k_test_cases.json) includes exact predictions. The color example has a potentially noisy Visual Genome label; the relation example illustrates strict exact-match scoring. These six cases were selected for explanation, not sampled at random.
+
+![120k adapter successes and scored misses with held-out photos](https://raw.githubusercontent.com/harshnandwana/grounding-jet/main/results/120k_test_cases.png)
+"""
+    elif metrics["train_records_unique"] == 40_000:
+        visual_section = """
+## Photo-based held-out cases
+
+The [GitHub composite](https://github.com/harshnandwana/grounding-jet/blob/main/results/test_case_comparison.png) shows selected held-out predictions with annotated photos. Its [companion JSON](https://github.com/harshnandwana/grounding-jet/blob/main/results/test_case_examples.json) retains full predictions.
+
+![40k adapter selected held-out cases with source photos](https://raw.githubusercontent.com/harshnandwana/grounding-jet/main/results/test_case_comparison.png)
 """
     for task in TASKS:
         score = metrics["full_test_generation_scores"][task]
@@ -127,6 +143,15 @@ This PEFT adapter was trained on a **{metrics['train_records_unique']:,}-row str
 
 ![Held-out subset benchmark](benchmark.png)
 {comparison}
+{visual_section}
+
+## How the dataset was created
+
+Published train and evaluation questions largely use five fixed templates. COCO instance annotations supply grounding, box choice, and left/right questions; Visual Genome v1.2 supplies selected color and relation labels. Objects, boxes, and targets vary by photo, and a photo yields only supported questions. The separate 6,823 Luna-generated candidate rows were excluded pending human review. This training result does not establish generalization to unfamiliar wording, counting, absence, or false premises. See the [dataset creation guide](https://github.com/harshnandwana/grounding-jet/blob/main/docs/DATA.md).
+
+One [held-out COCO photo](https://github.com/harshnandwana/grounding-jet/blob/main/results/one_image_dataset.json) yields 61 published test rows across all five tasks. This GitHub-hosted composite shows one row per task with the actual photo; **no photo bytes were uploaded to this model repository or the Hugging Face dataset**.
+
+![Five dataset questions derived from one source photo](https://raw.githubusercontent.com/harshnandwana/grounding-jet/main/results/one_image_dataset.png)
 
 ## Dataset and training
 

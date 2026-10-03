@@ -1,0 +1,45 @@
+{
+  "image_id": "76547",
+  "image_source": "https://s3.amazonaws.com/images.cocodataset.org/val2017/000000076547.jpg",
+  "split": "test",
+  "record_count": 61,
+  "task_counts": {
+    "ground_bbox": 8,
+    "box_choice": 8,
+    "spatial_boolean": 38,
+    "attribute_text": 4,
+    "relation_text": 3
+  },
+  "selected": [
+    {
+      "id": "coco2017-val2017-76547-locate-125428",
+      "task": "ground_bbox",
+      "question": "Where is the bicycle? Return its bounding box as normalized x1,y1,x2,y2 coordinates.",
+      "target": "[0.000, 0.489, 0.307, 0.997]"
+    },
+    {
+      "id": "coco2017-val2017-76547-ground-125428",
+      "task": "box_choice",
+      "question": "Which box contains the bicycle?",
+      "target": "B"
+    },
+    {
+      "id": "coco2017-val2017-76547-spatial-125428-188853",
+      "task": "spatial_boolean",
+      "question": "Is the bicycle to the left of the person?",
+      "target": "YES"
+    },
+    {
+      "id": "vg-2344605-attribute-2767180-black",
+      "task": "attribute_text",
+      "question": "What color is the backpack in the indicated box?",
+      "target": "black"
+    },
+    {
+      "id": "vg-2344605-relation-3884368",
+      "task": "relation_text",
+      "question": "How is the laptop in box 1 related to the table in box 2?",
+      "target": "on"
+    }
+  ]
+}
